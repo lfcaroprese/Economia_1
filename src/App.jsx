@@ -1,1238 +1,935 @@
 import { useState } from "react";
 
-/* ─── PALETA CROMÁTICA POR CAPÍTULO ──────────────────────────────────────────
-  Cap 1  Principios:    Azul    #1D4ED8  → rigor científico, fundamentos
-  Cap 2  Demanda:       Verde   #059669  → flujo, movimiento, mercado vivo
-  Cap 3  Equilibrio:    Teal    #0F766E  → balance, convergencia
-  Cap 4  Consumidor:    Violeta #6D28D9  → mente, preferencias, decisión
-  Cap 5  Productor:     Naranja #D97706  → producción, industria, energía
-  Cap 6  Eficiencia:    Cian    #0891B2  → claridad, optimalidad social
-  Cap 7  Externalidades:Rojo    #DC2626  → falla, externalidad, corrección
-  Cap 9  Monopolio:     Ámbar   #B45309  → poder, concentración, distorsión
-  Cap 11 GDP:           Índigo  #4338CA  → macro, agregado, medición
-  Cap 12 Crecimiento:   Esmeralda #065F46 → largo plazo, prosperidad
-──────────────────────────────────────────────────────────────────────────── */
+const PAL = {
+  cap1:  { m:"#1D4ED8", bg:"#EFF6FF", bd:"#BFDBFE", t:"#1E40AF" },
+  cap2:  { m:"#059669", bg:"#ECFDF5", bd:"#A7F3D0", t:"#065F46" },
+  cap3:  { m:"#0F766E", bg:"#F0FDFA", bd:"#99F6E4", t:"#134E4A" },
+  cap4:  { m:"#6D28D9", bg:"#F5F3FF", bd:"#DDD6FE", t:"#4C1D95" },
+  cap5:  { m:"#D97706", bg:"#FFFBEB", bd:"#FDE68A", t:"#92400E" },
+  cap6:  { m:"#0891B2", bg:"#ECFEFF", bd:"#A5F3FC", t:"#164E63" },
+  cap7:  { m:"#DC2626", bg:"#FEF2F2", bd:"#FECACA", t:"#7F1D1D" },
+  cap9:  { m:"#B45309", bg:"#FEF3C7", bd:"#FDE68A", t:"#78350F" },
+  cap11: { m:"#4338CA", bg:"#EEF2FF", bd:"#C7D2FE", t:"#312E81" },
+  cap12: { m:"#065F46", bg:"#ECFDF5", bd:"#A7F3D0", t:"#022C22" },
+};
 
-const CAPITULOS = [
-  /* ══════════════════════════════════════════════════════ CAP 1 */
-  {
-    id: "cap1",
-    numero: 1,
-    titulo: "Principios de Economía",
-    subtitulo: "Los tres pilares: Optimización, Equilibrio y Empirismo",
-    color: "#1D4ED8",
-    colorBg: "#1D4ED818",
-    colorBorder: "#1D4ED840",
-    emoji: "🔬",
-    resumen: [
-      "La economía estudia cómo los agentes toman decisiones ante la escasez: recursos limitados frente a necesidades ilimitadas.",
-      "Tres principios fundamentales organizan todo el análisis económico: optimización (los agentes eligen lo mejor posible), equilibrio (las interacciones entre agentes llevan a un estado estable) y empirismo (las teorías se verifican con datos).",
-      "Economía positiva describe el mundo como es; economía normativa prescribe cómo debería ser.",
-      "El costo de oportunidad es el verdadero costo de cualquier decisión: aquello a lo que se renuncia al elegir una opción.",
-    ],
-    conceptos: [
-      { termino: "Escasez", def: "Los recursos son limitados pero los deseos son ilimitados. Toda elección implica resignar algo." },
-      { termino: "Optimización", def: "Los agentes eligen la mejor opción posible dadas sus restricciones. Análisis marginal: comparar costos y beneficios de la última unidad." },
-      { termino: "Equilibrio", def: "Situación donde ningún agente tiene incentivos para cambiar su comportamiento. Estado estable resultante de las interacciones." },
-      { termino: "Empirismo", def: "Las hipótesis económicas se contrastan con datos reales. La evidencia empírica guía y corrige las teorías." },
-      { termino: "Economía Positiva", def: "Describe el mundo como es, usando hechos verificables. Ejemplo: 'si sube el precio, cae la demanda'." },
-      { termino: "Economía Normativa", def: "Establece juicios de valor sobre cómo debería ser el mundo. Ejemplo: 'el Estado debería subsidiar la educación'." },
-      { termino: "Costo de Oportunidad", def: "El valor de la mejor alternativa resignada al tomar una decisión. Es el verdadero costo económico." },
-      { termino: "Análisis Marginal", def: "Evaluar el beneficio y costo de una unidad adicional. La clave de toda optimización económica." },
-    ],
-    infografia: "tres_pilares",
-    tips: [
-      "Los TRES principios son: Optimización, Equilibrio y Empirismo — memorizarlos así",
-      "COSTO DE OPORTUNIDAD: lo que resignás, no lo que pagás — siempre presente en preguntas",
-      "Positivo = descripción del mundo real; Normativo = juicio de valor",
-      "El análisis MARGINAL compara el beneficio y costo de la ÚLTIMA unidad, no el total",
-      "Acemoglu no separa micro de macro: los tres principios aplican a AMBAS",
-    ],
-    cuadro: [
-      { aspecto: "Unidad de análisis", positivo: "Hechos observables", normativo: "Valores y objetivos" },
-      { aspecto: "Pregunta clave", positivo: "¿Qué ES?", normativo: "¿Qué DEBERÍA SER?" },
-      { aspecto: "Verificable con datos", positivo: "Sí", normativo: "No" },
-      { aspecto: "Ejemplo", positivo: "La suba de precios reduce la demanda", normativo: "Debe reducirse la pobreza" },
-    ],
-  },
+/* ── UI ── */
+function Fm({ title, formula, vars, nota, c }) {
+  return (
+    <div style={{ background:c.bg, border:`1px solid ${c.bd}`, borderRadius:10, padding:"14px 18px", marginBottom:12 }}>
+      {title && <div style={{ fontSize:11, fontWeight:700, color:c.t, marginBottom:6, textTransform:"uppercase", letterSpacing:.5 }}>{title}</div>}
+      <div style={{ fontFamily:"monospace", fontSize:17, fontWeight:700, color:c.m, background:"#fff",
+        border:`1px solid ${c.bd}`, borderRadius:6, padding:"10px 16px", marginBottom:vars?10:0, textAlign:"center" }}>
+        {formula}
+      </div>
+      {vars && <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+        {vars.map((v,i)=><span key={i} style={{ fontSize:12, background:"#fff", border:`1px solid ${c.bd}`,
+          borderRadius:4, padding:"2px 8px", color:"#374151" }}><strong style={{color:c.m}}>{v.n}</strong>: {v.d}</span>)}
+      </div>}
+      {nota && <div style={{ marginTop:8, fontSize:12, color:c.t, fontStyle:"italic" }}>💡 {nota}</div>}
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 2 */
-  {
-    id: "cap2",
-    numero: 2,
-    titulo: "Oferta y Demanda",
-    subtitulo: "Las fuerzas del mercado: compradores y vendedores",
-    color: "#059669",
-    colorBg: "#05966918",
-    colorBorder: "#05966940",
-    emoji: "📈",
-    resumen: [
-      "La demanda refleja el comportamiento de los compradores: cuánto desean comprar a cada precio. La ley de la demanda establece una relación negativa: a mayor precio, menor cantidad demandada.",
-      "La oferta refleja el comportamiento de los vendedores: cuánto desean vender a cada precio. La ley de la oferta establece una relación positiva: a mayor precio, mayor cantidad ofrecida.",
-      "Clave: distinguir movimientos a lo largo de la curva (cambia el precio) vs. desplazamientos de la curva entera (cambian otros factores).",
-      "La disposición a pagar (demanda) y la disposición a aceptar (oferta) son los conceptos marginales centrales.",
-    ],
-    conceptos: [
-      { termino: "Ley de la Demanda", def: "Relación negativa entre precio y cantidad demandada, ceteris paribus. Si el precio sube, la cantidad demandada cae." },
-      { termino: "Disposición a Pagar", def: "El precio máximo que un consumidor pagaría por una unidad adicional. Es el beneficio marginal del consumidor." },
-      { termino: "Curva de Demanda", def: "Pendiente negativa. Eje Y = precio, Eje X = cantidad. Suma horizontal de demandas individuales." },
-      { termino: "Ley de la Oferta", def: "Relación positiva entre precio y cantidad ofrecida, ceteris paribus. Si el precio sube, la cantidad ofrecida sube." },
-      { termino: "Disposición a Aceptar", def: "El precio mínimo que un vendedor aceptaría por una unidad. Equivale al costo marginal de producción." },
-      { termino: "Curva de Oferta", def: "Pendiente positiva. Aumenta con el precio. Suma horizontal de ofertas individuales." },
-      { termino: "Movimiento vs Desplazamiento", def: "Movimiento: cambia solo el precio (a lo largo de la curva). Desplazamiento: cambia otro factor (la curva entera se mueve)." },
-      { termino: "Ceteris Paribus", def: "'Todo lo demás igual'. Permite aislar el efecto del precio sobre la cantidad." },
-    ],
-    infografia: "oferta_demanda",
-    tips: [
-      "MOVIMIENTO a lo largo: cambia solo el PRECIO del bien",
-      "DESPLAZAMIENTO de la curva: cambia ingresos, gustos, precios de sustitutos/complementarios, número de compradores/vendedores, expectativas",
-      "Demanda: pendiente NEGATIVA. Oferta: pendiente POSITIVA — siempre",
-      "Disposición a pagar = beneficio marginal del CONSUMIDOR",
-      "Disposición a aceptar = costo marginal del PRODUCTOR",
-      "Factores que desplazan la DEMANDA: Y (ingreso), gustos, P sustitutos, P complementarios, nº compradores, expectativas",
-      "Factores que desplazan la OFERTA: costos insumos, tecnología, nº vendedores, expectativas",
-    ],
-    cuadro: [
-      { factor: "Sube el ingreso del consumidor", efectoDemanda: "Demanda sube (bien normal)", efectoOferta: "—" },
-      { factor: "Bajan costos de insumos", efectoDemanda: "—", efectoOferta: "Oferta sube" },
-      { factor: "Mejora la tecnología", efectoDemanda: "—", efectoOferta: "Oferta sube" },
-      { factor: "Sube el precio del sustituto", efectoDemanda: "Demanda sube", efectoOferta: "—" },
-      { factor: "Sube el precio del complementario", efectoDemanda: "Demanda baja", efectoOferta: "—" },
-      { factor: "Más vendedores en el mercado", efectoDemanda: "—", efectoOferta: "Oferta sube" },
-    ],
-  },
+function Ej({ titulo, enunciado, datos, pasos, respuesta, c }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ border:`1px solid ${c.bd}`, borderRadius:10, marginBottom:10, overflow:"hidden" }}>
+      <button onClick={()=>setOpen(!open)} style={{ width:"100%", textAlign:"left", padding:"11px 16px",
+        background:open?c.bg:"#fff", border:"none", cursor:"pointer", display:"flex", justifyContent:"space-between",
+        alignItems:"center", fontWeight:600, fontSize:14, color:c.t }}>
+        <span>📝 {titulo}</span><span style={{ color:c.m }}>{open?"▲":"▼"}</span>
+      </button>
+      {open && <div style={{ padding:"14px 16px", borderTop:`1px solid ${c.bd}`, background:c.bg }}>
+        {enunciado && <p style={{ margin:"0 0 10px", fontSize:14, color:"#374151", lineHeight:1.5 }}>{enunciado}</p>}
+        {datos && <div style={{ background:"#fff", borderRadius:6, padding:"8px 12px", marginBottom:10, border:`1px solid ${c.bd}` }}>
+          <div style={{ fontSize:11, fontWeight:700, color:c.t, marginBottom:4 }}>DATOS</div>
+          {datos.map((d,i)=><div key={i} style={{ fontSize:13, color:"#374151" }}>• {d}</div>)}
+        </div>}
+        <div style={{ marginBottom:10 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:c.t, marginBottom:6, textTransform:"uppercase" }}>Resolución paso a paso</div>
+          {pasos.map((p,i)=><div key={i} style={{ display:"flex", gap:8, marginBottom:6, alignItems:"flex-start" }}>
+            <span style={{ background:c.m, color:"#fff", borderRadius:"50%", width:20, height:20, display:"flex",
+              alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, marginTop:1 }}>{i+1}</span>
+            <span style={{ fontSize:13, color:"#374151", lineHeight:1.5 }}>{p}</span>
+          </div>)}
+        </div>
+        <div style={{ background:c.m, color:"#fff", borderRadius:8, padding:"10px 14px", fontSize:14, fontWeight:600 }}>✅ {respuesta}</div>
+      </div>}
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 3 */
-  {
-    id: "cap3",
-    numero: 3,
-    titulo: "Equilibrio del Mercado",
-    subtitulo: "Donde se cruzan oferta y demanda",
-    color: "#0F766E",
-    colorBg: "#0F766E18",
-    colorBorder: "#0F766E40",
-    emoji: "⚖️",
-    resumen: [
-      "El equilibrio de mercado es el punto donde las curvas de oferta y demanda se intersectan: precio de equilibrio y cantidad de equilibrio.",
-      "Si el precio está por encima del equilibrio hay exceso de oferta (surplus): los vendedores no consiguen vender todo y el precio baja.",
-      "Si el precio está por debajo del equilibrio hay exceso de demanda (shortage): los compradores compiten y el precio sube.",
-      "Cuando algún determinante cambia, el equilibrio se desplaza: análisis comparativo de estática.",
-    ],
-    conceptos: [
-      { termino: "Precio de Equilibrio", def: "Precio al que la cantidad ofrecida iguala a la cantidad demandada. El mercado se 'vacía'." },
-      { termino: "Cantidad de Equilibrio", def: "Cantidad transada cuando el mercado está en equilibrio. Maximiza las ganancias del intercambio." },
-      { termino: "Exceso de Oferta (Surplus)", def: "Precio > P*: los vendedores ofrecen más de lo que los compradores quieren. El precio tiende a bajar." },
-      { termino: "Exceso de Demanda (Shortage)", def: "Precio < P*: los compradores quieren más de lo que los vendedores ofrecen. El precio tiende a subir." },
-      { termino: "Estática Comparativa", def: "Técnica para analizar cómo cambia el equilibrio cuando varía un factor externo (desplazamiento de curvas)." },
-      { termino: "Mecanismo de Precios", def: "Los precios actúan como señales: coordinan las decisiones descentralizadas de millones de agentes." },
-    ],
-    infografia: "equilibrio",
-    tips: [
-      "Equilibrio: Qd = Qs. Precio que 'vacía el mercado'",
-      "Precio SOBRE equilibrio → exceso de OFERTA → precio BAJA",
-      "Precio BAJO equilibrio → exceso de DEMANDA → precio SUBE",
-      "Para estática comparativa: 1) ¿qué curva se desplaza? 2) ¿en qué dirección? 3) ¿cómo cambia P* y Q*?",
-      "Si DEMANDA sube → P* sube y Q* sube",
-      "Si OFERTA sube → P* baja y Q* sube",
-      "Si AMBAS suben → Q* sube, P* indeterminado (depende magnitudes)",
-    ],
-    cuadro: [
-      { cambio: "Demanda sube (curva → derecha)", precioEq: "Sube ↑", cantidadEq: "Sube ↑" },
-      { cambio: "Demanda baja (curva → izquierda)", precioEq: "Baja ↓", cantidadEq: "Baja ↓" },
-      { cambio: "Oferta sube (curva → derecha)", precioEq: "Baja ↓", cantidadEq: "Sube ↑" },
-      { cambio: "Oferta baja (curva → izquierda)", precioEq: "Sube ↑", cantidadEq: "Baja ↓" },
-      { cambio: "D sube + O sube (misma magnitud)", precioEq: "Sin cambio", cantidadEq: "Sube ↑" },
-    ],
-  },
+function Ck({ term, def, c }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div onClick={()=>setOpen(!open)} style={{ border:`1px solid ${c.bd}`, borderRadius:8, padding:"10px 14px",
+      marginBottom:8, cursor:"pointer", background:open?c.bg:"#fff" }}>
+      <div style={{ display:"flex", justifyContent:"space-between" }}>
+        <span style={{ fontWeight:700, fontSize:14, color:c.t }}>{term}</span>
+        <span style={{ color:c.m, fontSize:12 }}>{open?"▲":"▼"}</span>
+      </div>
+      {open && <p style={{ margin:"8px 0 0", fontSize:13, color:"#374151", lineHeight:1.5 }}>{def}</p>}
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 4 */
-  {
-    id: "cap4",
-    numero: 4,
-    titulo: "El Problema del Consumidor",
-    subtitulo: "Preferencias, restricciones y optimización del consumo",
-    color: "#6D28D9",
-    colorBg: "#6D28D918",
-    colorBorder: "#6D28D940",
-    emoji: "🛒",
-    resumen: [
-      "El consumidor elige la canasta de bienes que maximiza su bienestar (utilidad) sujeto a su restricción presupuestaria.",
-      "Las preferencias se representan con curvas de indiferencia: combinaciones de bienes que producen el mismo nivel de satisfacción.",
-      "La restricción presupuestaria es la línea que delimita las canastas asequibles dado el ingreso y los precios.",
-      "La optimización ocurre en el punto de tangencia entre la restricción presupuestaria y la curva de indiferencia más alta alcanzable: TMgS = Px/Py.",
-    ],
-    conceptos: [
-      { termino: "Curva de Indiferencia", def: "Conjunto de canastas de bienes que le generan el mismo nivel de utilidad al consumidor. Pendiente negativa y convexa." },
-      { termino: "Tasa Marginal de Sustitución (TMgS)", def: "Cuántas unidades del bien Y está dispuesto a resignar el consumidor para obtener una unidad más del bien X, manteniéndose igual de satisfecho." },
-      { termino: "Restricción Presupuestaria", def: "Ingreso = Px·X + Py·Y. Línea recta con pendiente -Px/Py. Delimita lo que el consumidor puede comprar." },
-      { termino: "Condición de Optimización", def: "En el punto óptimo: TMgS = Px/Py. La tasa a la que el consumidor desea sustituir iguala la tasa a la que el mercado permite hacerlo." },
-      { termino: "Utilidad Marginal", def: "Satisfacción adicional que genera consumir una unidad más del bien. Es decreciente: cada unidad extra satisface menos." },
-      { termino: "Efecto Sustitución", def: "Cuando sube el precio de X, el consumidor sustituye X por Y (bienes relativamente más baratos), manteniendo la utilidad constante." },
-      { termino: "Efecto Ingreso", def: "Cuando sube el precio de X, el poder adquisitivo real cae, reduciendo la demanda del bien." },
-      { termino: "Bienes Normales vs. Inferiores", def: "Normal: la demanda sube cuando sube el ingreso. Inferior: la demanda baja cuando sube el ingreso." },
-    ],
-    infografia: "consumidor",
-    tips: [
-      "Punto óptimo: tangencia entre CURVA DE INDIFERENCIA y RESTRICCIÓN PRESUPUESTARIA",
-      "Condición: TMgS = Px/Py (o equivalentemente UMgx/Px = UMgy/Py)",
-      "TMgS = pendiente de la curva de indiferencia (valor absoluto)",
-      "Pendiente de la restricción presupuestaria = -Px/Py",
-      "Utilidad marginal DECRECIENTE: cada unidad adicional satisface MENOS",
-      "Efecto sustitución + efecto ingreso = efecto total del cambio de precio",
-      "Bienes Giffen: bien inferior con efecto ingreso tan fuerte que la demanda SUBE cuando sube el precio (caso teórico)",
-    ],
-    cuadro: [
-      { caso: "Sube el ingreso", restriccion: "Se desplaza hacia afuera (paralela)", optimo: "Más de ambos bienes (si normales)" },
-      { caso: "Sube Px", restriccion: "Rota: intercepto en Y constante, intercepto en X baja", optimo: "Menos X, posiblemente más Y" },
-      { caso: "Baja Px", restriccion: "Rota: intercepto en Y constante, intercepto en X sube", optimo: "Más X, posiblemente menos Y" },
-      { caso: "Sube Py", restriccion: "Rota: intercepto en X constante, intercepto en Y baja", optimo: "Menos Y, posiblemente más X" },
-    ],
-  },
+/* ── INTERACTIVE GRAPHS ── */
+function GraficoOyD({ c }) {
+  const [sa,setSa]=useState(5); const [sb,setSb]=useState(2);
+  const [da,setDa]=useState(30); const [db,setDb]=useState(3);
+  const [pmaxOn,setPmaxOn]=useState(false); const [pmax,setPmax]=useState(10);
+  const Qe=(da-sa)/(sb+db); const Pe=sa+sb*Qe;
+  const EC=Qe>0?0.5*Qe*(da-Pe):0; const EP=Qe>0?0.5*Qe*(Pe-sa):0;
+  const W=340,H=250,ox=55,oy=H-30;
+  const mQ=Math.max(Qe*2.2,1); const mP=da*1.1;
+  const sx=q=>ox+(q/mQ)*(W-ox-15); const sy=p=>oy-(p/mP)*(oy-20);
+  const eq_x=sx(Qe); const eq_y=sy(Pe);
+  let pmQo=0,pmPerd=0;
+  if(pmaxOn&&pmax<Pe&&pmax>sa){pmQo=(pmax-sa)/sb; pmPerd=(0.5*(Qe-pmQo)*(Pe-pmax));}
+  return (
+    <div style={{ background:"#fff", border:`1px solid ${c.bd}`, borderRadius:12, padding:16 }}>
+      <div style={{ fontWeight:700, color:c.t, marginBottom:10, fontSize:14 }}>🔢 Calculadora Oferta & Demanda</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
+        {[["Intercepto O (a)",sa,setSa,0,20],["Pendiente O (b)",sb,setSb,.5,10],
+          ["Intercepto D (c)",da,setDa,10,60],["Pendiente D (d)",db,setDb,.5,10]].map(([l,v,s,mn,mx])=>(
+          <label key={l} style={{fontSize:12,color:"#374151"}}>
+            {l}<input type="range" min={mn} max={mx} step={.5} value={v} onChange={e=>s(+e.target.value)}
+              style={{display:"block",width:"100%",accentColor:c.m}}/><span style={{color:c.m,fontWeight:700}}>{v}</span>
+          </label>))}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",maxWidth:W}}>
+        <line x1={ox} y1={20} x2={ox} y2={oy} stroke="#9CA3AF" strokeWidth={1.5}/>
+        <line x1={ox} y1={oy} x2={W-5} y2={oy} stroke="#9CA3AF" strokeWidth={1.5}/>
+        <text x={ox+4} y={16} fontSize={10} fill="#6B7280">P</text>
+        <text x={W-14} y={oy+12} fontSize={10} fill="#6B7280">Q</text>
+        {Qe>0&&<><polygon points={`${eq_x},${eq_y} ${sx(0)},${sy(da)} ${ox},${eq_y}`} fill={c.m} fillOpacity={.15}/>
+          <text x={ox+6} y={(eq_y+sy(da))/2} fontSize={9} fill={c.m} fontWeight="bold">EC</text>
+          <polygon points={`${ox},${sy(sa)} ${eq_x},${eq_y} ${ox},${eq_y}`} fill="#F59E0B" fillOpacity={.2}/>
+          <text x={ox+6} y={(sy(sa)+eq_y)/2+8} fontSize={9} fill="#B45309" fontWeight="bold">EP</text></>}
+        <line x1={sx(0)} y1={sy(da)} x2={sx(da/db)} y2={sy(0)} stroke={c.m} strokeWidth={2}/>
+        <text x={sx(0)-14} y={sy(da)} fontSize={10} fill={c.m} fontWeight="bold">D</text>
+        <line x1={sx(0)} y1={sy(sa)} x2={sx((mP-sa)/sb)} y2={sy(mP)} stroke="#F59E0B" strokeWidth={2}/>
+        <text x={sx((mP-sa)/sb)+2} y={sy(mP)+3} fontSize={10} fill="#B45309" fontWeight="bold">O</text>
+        {Qe>0&&<><line x1={ox} y1={eq_y} x2={eq_x} y2={eq_y} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="4"/>
+          <line x1={eq_x} y1={oy} x2={eq_x} y2={eq_y} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="4"/>
+          <circle cx={eq_x} cy={eq_y} r={5} fill={c.m}/>
+          <text x={eq_x+6} y={eq_y-4} fontSize={9} fill={c.t}>({Qe.toFixed(1)},{Pe.toFixed(1)})</text>
+          <text x={ox-34} y={eq_y+3} fontSize={9} fill="#374151">P={Pe.toFixed(1)}</text>
+          <text x={eq_x-8} y={oy+12} fontSize={9} fill="#374151">Q={Qe.toFixed(1)}</text></>}
+        {pmaxOn&&pmax<Pe&&<line x1={ox} y1={sy(pmax)} x2={W-5} y2={sy(pmax)} stroke="#DC2626" strokeWidth={1.5} strokeDasharray="6 3"/>}
+      </svg>
+      {Qe>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginTop:6}}>
+        {[["EC",EC.toFixed(2),c.m],["EP",EP.toFixed(2),"#B45309"],["ET",(EC+EP).toFixed(2),"#374151"]].map(([k,v,col])=>(
+          <div key={k} style={{background:"#F9FAFB",borderRadius:6,padding:8,textAlign:"center",border:`1px solid ${c.bd}`}}>
+            <div style={{fontSize:11,color:"#6B7280"}}>{k}</div>
+            <div style={{fontSize:18,fontWeight:700,color:col}}>{v}</div>
+          </div>))}
+      </div>}
+      <div style={{marginTop:10,padding:"8px 12px",background:"#FEF3C7",borderRadius:8,border:"1px solid #FDE68A"}}>
+        <label style={{fontSize:13,fontWeight:600,color:"#92400E",display:"flex",alignItems:"center",gap:8}}>
+          <input type="checkbox" checked={pmaxOn} onChange={e=>setPmaxOn(e.target.checked)}/>
+          Simular Precio Máximo
+        </label>
+        {pmaxOn&&<><input type="range" min={0} max={Math.floor(Pe)} step={.5} value={pmax}
+          onChange={e=>setPmax(+e.target.value)} style={{display:"block",width:"100%",marginTop:4,accentColor:"#DC2626"}}/>
+          <div style={{fontSize:12,color:"#7F1D1D",marginTop:2}}>
+            Pmax={pmax} | Q_ofrecida={(pmax>sa?(pmax-sa)/sb:0).toFixed(2)} | Pérdida eficiencia≈{pmPerd.toFixed(2)}
+          </div></>}
+      </div>
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 5 */
-  {
-    id: "cap5",
-    numero: 5,
-    titulo: "El Problema del Productor",
-    subtitulo: "Costos, producción y maximización de beneficios",
-    color: "#D97706",
-    colorBg: "#D9770618",
-    colorBorder: "#D9770640",
-    emoji: "🏭",
-    resumen: [
-      "En mercados competitivos, las empresas son tomadoras de precios: venden productos idénticos y no pueden influir en el precio de mercado.",
-      "La empresa debe decidir cuánto producir para maximizar beneficios: comparar el ingreso marginal con el costo marginal.",
-      "La regla de oro: producir hasta que Ingreso Marginal = Costo Marginal (IM = CM). En competencia perfecta, IM = P.",
-      "La curva de Costo Marginal es la curva de oferta de la empresa: indica cuánto producir a cada precio.",
-    ],
-    conceptos: [
-      { termino: "Competencia Perfecta", def: "Mercado con muchos compradores y vendedores, producto homogéneo, libre entrada/salida. Las empresas son tomadoras de precios." },
-      { termino: "Función de Producción", def: "Relación técnica entre insumos y producto. Q = f(K, L). Muestra la máxima producción posible con cada combinación de factores." },
-      { termino: "Producto Marginal", def: "Producción adicional al añadir una unidad más de un factor. Es decreciente: cada trabajador adicional aporta menos." },
-      { termino: "Costo Fijo (CF)", def: "Costos que no varían con la producción a corto plazo (alquiler, maquinaria). Existen aunque no se produzca nada." },
-      { termino: "Costo Variable (CV)", def: "Costos que sí varían con la producción (salarios, materias primas)." },
-      { termino: "Costo Marginal (CM)", def: "Cambio en el costo total al producir una unidad adicional. ΔCT/ΔQ. Primero decrece, luego crece (forma de U)." },
-      { termino: "Ingreso Marginal (IM)", def: "Ingreso adicional al vender una unidad más. En competencia perfecta: IM = Precio (la curva de demanda de la empresa es horizontal)." },
-      { termino: "Regla IM = CM", def: "La empresa maximiza beneficios produciendo hasta que el ingreso de la última unidad iguala su costo. En competencia: P = CM." },
-    ],
-    infografia: "productor",
-    tips: [
-      "Competencia perfecta: IM = P (precio = ingreso marginal por ser tomadora de precios)",
-      "REGLA DE ORO: producir hasta IM = CM → en competencia perfecta: P = CM",
-      "Curva de CM tiene forma de U: primero baja (rendimientos crecientes), luego sube (rendimientos decrecientes)",
-      "CURVA DE OFERTA de la empresa = curva de CM por encima del CVM mínimo",
-      "Beneficio económico = IT - CT (incluyendo costo de oportunidad, no solo contable)",
-      "Si P > CTM → beneficio positivo. Si P < CTM → pérdida. Si P = CTM → beneficio normal (= 0 económico)",
-      "Largo plazo: libre entrada/salida → P = CTM mínimo (beneficio económico = 0)",
-    ],
-    cuadro: [
-      { precio: "P > CTM", decision: "Producir (hay beneficio positivo)", resultado: "Ganancias económicas" },
-      { precio: "P = CTM", decision: "Producir (punto de quiebre)", resultado: "Beneficio normal (= 0 económico)" },
-      { precio: "CVM < P < CTM", decision: "Producir a corto plazo (cubre variables)", resultado: "Pérdida menor que costos fijos" },
-      { precio: "P < CVM", decision: "Cerrar (incluso a corto plazo)", resultado: "Pérdida = costos fijos" },
-    ],
-  },
+function GraficoMonopolio({ c }) {
+  const [a,setA]=useState(24); const [b,setB]=useState(1); const [mc,setMc]=useState(4);
+  const Qopt=(a-mc)/(2*b); const Popt=a-b*Qopt; const benef=(Popt-mc)*Qopt;
+  const W=340,H=250,ox=50,oy=H-30;
+  const mQ=Math.max(Qopt*2.5,1); const mP=a*1.1;
+  const sx=q=>ox+(q/mQ)*(W-ox-15); const sy=p=>oy-(p/mP)*(oy-20);
+  return (
+    <div style={{background:"#fff",border:`1px solid ${c.bd}`,borderRadius:12,padding:16}}>
+      <div style={{fontWeight:700,color:c.t,marginBottom:10,fontSize:14}}>🔢 Calculadora Monopolio — P = a − b·Q</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+        {[["a (intercepto D)",a,setA,8,50],["b (pendiente)",b,setB,.5,5],["CM",mc,setMc,0,20]].map(([l,v,s,mn,mx])=>(
+          <label key={l} style={{fontSize:12,color:"#374151"}}>
+            {l}<input type="range" min={mn} max={mx} step={.5} value={v} onChange={e=>s(+e.target.value)}
+              style={{display:"block",width:"100%",accentColor:c.m}}/><span style={{color:c.m,fontWeight:700}}>{v}</span>
+          </label>))}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",maxWidth:W}}>
+        <line x1={ox} y1={20} x2={ox} y2={oy} stroke="#9CA3AF" strokeWidth={1.5}/>
+        <line x1={ox} y1={oy} x2={W-5} y2={oy} stroke="#9CA3AF" strokeWidth={1.5}/>
+        {Qopt>0&&<rect x={ox} y={sy(Popt)} width={sx(Qopt)-ox} height={sy(mc)-sy(Popt)} fill={c.m} fillOpacity={.15}/>}
+        <line x1={sx(0)} y1={sy(a)} x2={sx(a/b)} y2={sy(0)} stroke={c.m} strokeWidth={2}/>
+        <text x={sx(0)-14} y={sy(a)+4} fontSize={10} fill={c.m} fontWeight="bold">D</text>
+        <line x1={sx(0)} y1={sy(a)} x2={sx(a/(2*b))} y2={sy(0)} stroke="#7C3AED" strokeWidth={2}/>
+        <text x={sx(a/(2*b))+2} y={sy(0)+11} fontSize={10} fill="#7C3AED" fontWeight="bold">IM</text>
+        <line x1={ox} y1={sy(mc)} x2={W-5} y2={sy(mc)} stroke="#DC2626" strokeWidth={2} strokeDasharray="6 3"/>
+        <text x={W-12} y={sy(mc)-3} fontSize={9} fill="#DC2626" fontWeight="bold">CM</text>
+        {Qopt>0&&<><line x1={ox} y1={sy(Popt)} x2={sx(Qopt)} y2={sy(Popt)} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="4"/>
+          <line x1={sx(Qopt)} y1={oy} x2={sx(Qopt)} y2={sy(Popt)} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="4"/>
+          <circle cx={sx(Qopt)} cy={sy(mc)} r={4} fill="#DC2626"/>
+          <circle cx={sx(Qopt)} cy={sy(Popt)} r={4} fill={c.m}/>
+          <text x={ox-34} y={sy(Popt)+3} fontSize={9} fill={c.t}>P*={Popt.toFixed(1)}</text>
+          <text x={sx(Qopt)-8} y={oy+12} fontSize={9} fill={c.t}>Q*={Qopt.toFixed(1)}</text></>}
+      </svg>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginTop:6}}>
+        {[["Q*",Qopt.toFixed(2)],["P*",Popt.toFixed(2)],["Beneficios",benef.toFixed(2)]].map(([k,v])=>(
+          <div key={k} style={{background:"#F9FAFB",borderRadius:6,padding:8,textAlign:"center",border:`1px solid ${c.bd}`}}>
+            <div style={{fontSize:11,color:"#6B7280"}}>{k}</div>
+            <div style={{fontSize:18,fontWeight:700,color:c.m}}>{v}</div>
+          </div>))}
+      </div>
+      <div style={{marginTop:6,fontSize:12,color:"#6B7280",background:"#F9FAFB",borderRadius:6,padding:8}}>
+        IM = {a} − {2*b}·Q &nbsp;|&nbsp; Q* donde IM=CM: ({a}−{mc})/(2×{b}) = {Qopt.toFixed(2)} &nbsp;|&nbsp; P* = (a+CM)/2 = {Popt.toFixed(2)}
+      </div>
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 6 */
-  {
-    id: "cap6",
-    numero: 6,
-    titulo: "Eficiencia del Mercado",
-    subtitulo: "Excedentes, la Mano Invisible y fallas del mercado",
-    color: "#0891B2",
-    colorBg: "#0891B218",
-    colorBorder: "#0891B240",
-    emoji: "🤝",
-    resumen: [
-      "En competencia perfecta, el mercado asigna los recursos de manera eficiente: maximiza el bienestar total (excedente del consumidor + excedente del productor).",
-      "Excedente del consumidor: diferencia entre la disposición a pagar y el precio pagado. Excedente del productor: diferencia entre el precio recibido y el costo marginal.",
-      "La 'mano invisible' de Adam Smith: los agentes buscando su propio beneficio maximizan sin saberlo el bienestar social.",
-      "Las fallas de mercado (externalidades, bienes públicos, información asimétrica, poder de mercado) impiden que la mano invisible funcione correctamente.",
-    ],
-    conceptos: [
-      { termino: "Excedente del Consumidor (EC)", def: "Diferencia entre la máxima disposición a pagar y el precio de mercado. Área bajo la curva de demanda y sobre el precio." },
-      { termino: "Excedente del Productor (EP)", def: "Diferencia entre el precio de mercado y el costo marginal (mínimo precio aceptado). Área sobre la curva de oferta y bajo el precio." },
-      { termino: "Excedente Total (ET)", def: "EC + EP. El mercado competitivo en equilibrio maximiza el ET: asignación eficiente de Pareto." },
-      { termino: "Mano Invisible", def: "Concepto de Adam Smith: los mercados competitivos coordinan la actividad económica sin planificación central, maximizando el bienestar social." },
-      { termino: "Eficiencia de Pareto", def: "Asignación donde no se puede mejorar a nadie sin empeorar a otro. El equilibrio competitivo es eficiente en este sentido." },
-      { termino: "Pérdida de Eficiencia (Deadweight Loss)", def: "Reducción en el excedente total cuando el mercado no produce la cantidad óptima (ej.: por impuestos, precios máximos/mínimos, monopolio)." },
-      { termino: "Precio Máximo", def: "Techo de precio impuesto por el gobierno. Si está bajo P*, genera escasez (exceso de demanda) y pérdida de eficiencia." },
-      { termino: "Precio Mínimo", def: "Piso de precio impuesto por el gobierno. Si está sobre P*, genera excedente (exceso de oferta) y pérdida de eficiencia." },
-    ],
-    infografia: "eficiencia",
-    tips: [
-      "EC = área triangular entre curva de DEMANDA y el precio (arriba del precio)",
-      "EP = área triangular entre curva de OFERTA y el precio (abajo del precio)",
-      "ET = EC + EP. El equilibrio competitivo lo MAXIMIZA",
-      "Pérdida de eficiencia = triángulo que aparece cuando Q ≠ Q* de equilibrio",
-      "Precio MÁXIMO efectivo: P_max < P* → escasez + deadweight loss",
-      "Precio MÍNIMO efectivo: P_min > P* → superávit + deadweight loss",
-      "Impuesto genera pérdida de eficiencia: consumidores y productores pierden más de lo que el Estado recauda",
-    ],
-    cuadro: [
-      { intervencion: "Precio Máximo (P_max < P*)", ecambio: "Sube parcialmente", epambio: "Baja", efficiencia: "Pérdida de eficiencia, escasez" },
-      { intervencion: "Precio Mínimo (P_min > P*)", ecambio: "Baja", epambio: "Sube parcialmente", efficiencia: "Pérdida de eficiencia, excedente" },
-      { intervencion: "Impuesto al vendedor", ecambio: "Baja", epambio: "Baja", efficiencia: "Pérdida de eficiencia" },
-      { intervencion: "Subsidio", ecambio: "Sube", epambio: "Sube", efficiencia: "Puede corregir externalidades" },
-    ],
-  },
+function GraficoPresupuesto({ c }) {
+  const [M,setM]=useState(1000); const [Px,setPx]=useState(25); const [Py,setPy]=useState(40);
+  const maxX=M/Px; const maxY=M/Py; const co=Px/Py;
+  return (
+    <div style={{background:"#fff",border:`1px solid ${c.bd}`,borderRadius:12,padding:16}}>
+      <div style={{fontWeight:700,color:c.t,marginBottom:10,fontSize:14}}>🔢 Restricción Presupuestaria</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+        {[["M (ingreso)",M,setM,200,3000,100],["Px",Px,setPx,5,200,5],["Py",Py,setPy,5,200,5]].map(([l,v,s,mn,mx,st=1])=>(
+          <label key={l} style={{fontSize:12,color:"#374151"}}>
+            {l}<input type="range" min={mn} max={mx} step={st} value={v} onChange={e=>s(+e.target.value)}
+              style={{display:"block",width:"100%",accentColor:c.m}}/><span style={{color:c.m,fontWeight:700}}>{v}</span>
+          </label>))}
+      </div>
+      <svg viewBox="0 0 340 250" style={{width:"100%",maxWidth:340}}>
+        <line x1={50} y1={20} x2={50} y2={220} stroke="#9CA3AF" strokeWidth={1.5}/>
+        <line x1={50} y1={220} x2={330} y2={220} stroke="#9CA3AF" strokeWidth={1.5}/>
+        <text x={18} y={25} fontSize={11} fill="#374151">Qy</text>
+        <text x={318} y={233} fontSize={11} fill="#374151">Qx</text>
+        <line x1={50} y1={35} x2={325} y2={220} stroke={c.m} strokeWidth={2.5}/>
+        <circle cx={50} cy={35} r={5} fill={c.m}/>
+        <text x={55} y={32} fontSize={10} fill={c.t} fontWeight="bold">M/Py={maxY.toFixed(1)}</text>
+        <circle cx={325} cy={220} r={5} fill={c.m}/>
+        <text x={285} y={215} fontSize={10} fill={c.t} fontWeight="bold">M/Px={maxX.toFixed(1)}</text>
+        <text x={165} y={145} fontSize={11} fill={c.m} fontWeight="bold" transform="rotate(-38,165,145)">pendiente=−{co.toFixed(2)}</text>
+      </svg>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginTop:6}}>
+        {[["Máx Qx",maxX.toFixed(1)],["Máx Qy",maxY.toFixed(1)],["CO de X en Y",co.toFixed(2)]].map(([k,v])=>(
+          <div key={k} style={{background:"#F9FAFB",borderRadius:6,padding:8,textAlign:"center",border:`1px solid ${c.bd}`}}>
+            <div style={{fontSize:11,color:"#6B7280"}}>{k}</div>
+            <div style={{fontSize:18,fontWeight:700,color:c.m}}>{v}</div>
+          </div>))}
+      </div>
+      <div style={{marginTop:6,fontSize:12,color:"#6B7280"}}>
+        Ecuación: {Px}·Qx + {Py}·Qy = {M} &nbsp;|&nbsp; Qy = {maxY.toFixed(1)} − {co.toFixed(2)}·Qx
+      </div>
+    </div>
+  );
+}
 
-  /* ══════════════════════════════════════════════════════ CAP 7 */
-  {
-    id: "cap7",
-    numero: 7,
-    titulo: "Externalidades y Bienes Públicos",
-    subtitulo: "Fallas del mercado: cuando la mano invisible falla",
-    color: "#DC2626",
-    colorBg: "#DC262618",
-    colorBorder: "#DC262640",
-    emoji: "🌍",
-    resumen: [
-      "Una externalidad ocurre cuando la acción de un agente afecta el bienestar de terceros que no participaron en la transacción, sin compensación.",
-      "Externalidad negativa: el costo social > costo privado. El mercado sobreproduceproduce. Ejemplo: contaminación industrial.",
-      "Externalidad positiva: el beneficio social > beneficio privado. El mercado subproduce. Ejemplo: educación, vacunación.",
-      "El Teorema de Coase: si los costos de transacción son bajos y los derechos de propiedad están definidos, la negociación privada puede resolver eficientemente las externalidades.",
-    ],
-    conceptos: [
-      { termino: "Externalidad", def: "Costo o beneficio que recae sobre terceros ajenos a una transacción. El mercado no lo incorpora al precio automáticamente." },
-      { termino: "Externalidad Negativa", def: "Costo impuesto a terceros. CSocial > CPrivado. El bien se sobreproduceproduce respecto al óptimo social. Ej.: contaminación." },
-      { termino: "Externalidad Positiva", def: "Beneficio generado para terceros. BenSocial > BenPrivado. El bien se subproduce respecto al óptimo social. Ej.: educación." },
-      { termino: "Internalizar la Externalidad", def: "Hacer que el agente enfrente el costo/beneficio total de su acción (privado + social). Objetivo de toda política correctora." },
-      { termino: "Teorema de Coase", def: "Con bajos costos de transacción y derechos de propiedad bien definidos, la negociación privada lleva al resultado eficiente, independientemente de quién tiene los derechos." },
-      { termino: "Impuesto Pigouviano", def: "Impuesto corrector igual al costo marginal externo de la externalidad negativa. Lleva la producción al óptimo social." },
-      { termino: "Subsidio Pigouviano", def: "Subsidio corrector igual al beneficio marginal externo. Incentiva a producir/consumir hasta el óptimo social para externalidades positivas." },
-      { termino: "Bienes Públicos", def: "No rivales (el consumo de uno no reduce el de otro) y no excluibles (no se puede impedir que alguien los consuma). El mercado los subprovee: problema del polizón." },
-      { termino: "Bienes Comunes", def: "No excluibles pero SÍ rivales. El uso de uno reduce la disponibilidad para los demás. Tragedia de los bienes comunes: sobreexplotación." },
-      { termino: "Problema del Polizón (Free Rider)", def: "Cuando un bien es no excluible, los individuos esperan que otros paguen. El mercado privado no provee suficiente bien público." },
-    ],
-    infografia: "externalidades",
-    tips: [
-      "Externalidad NEGATIVA → mercado SOBREPRODUCEPRODUCE → impuesto Pigouviano corrige",
-      "Externalidad POSITIVA → mercado SUBPRODUCE → subsidio Pigouviano corrige",
-      "Teorema de Coase: funciona solo con BAJOS costos de transacción y derechos de propiedad DEFINIDOS",
-      "Bienes PÚBLICOS: no rival + no excluible → problema del POLIZÓN → Estado los provee",
-      "Bienes COMUNES: no excluible + SÍ rival → tragedia de los comunes → sobreexplotación",
-      "Regulaciones vs. Pigouvianos: los impuestos son más eficientes porque dan incentivos a innovar",
-      "Impuesto óptimo = costo marginal EXTERNO (no el costo marginal privado)",
-    ],
-    cuadro: [
-      { tipo: "Bien Privado", rival: "Sí", excluible: "Sí", ejemplo: "Pan, ropa, auto" },
-      { tipo: "Bien Público", rival: "No", excluible: "No", ejemplo: "Defensa nacional, aire limpio, alumbrado" },
-      { tipo: "Bien Común", rival: "Sí", excluible: "No", ejemplo: "Peces en lago libre, bosques públicos" },
-      { tipo: "Monopolio Natural", rival: "No", excluible: "Sí", ejemplo: "Software, streaming, cable TV" },
-    ],
-  },
+/* ── CHAPTERS ── */
+const CAPS = [
+{ id:"cap1", num:1, emoji:"🔬", titulo:"Principios de Economía", sub:"Optimización · Equilibrio · Empirismo", pal:"cap1",
+  teoria:[
+    "La economía estudia cómo agentes racionales asignan recursos escasos frente a necesidades ilimitadas.",
+    "Tres principios organizan todo el análisis económico: (1) Optimización: los agentes eligen lo mejor dadas sus restricciones. (2) Equilibrio: nadie tiene incentivo de cambiar su conducta. (3) Empirismo: las teorías se validan con datos.",
+    "Economía positiva: describe el mundo como es (verificable). Economía normativa: prescribe cómo debería ser (juicio de valor).",
+    "Costo de oportunidad: lo que se resigna al elegir. El verdadero costo de cualquier decisión. Siempre está presente.",
+    "Análisis marginal: comparar el beneficio y costo de la última unidad. Óptimo: BM = CM.",
+  ],
+  conceptos:[
+    {t:"Optimización", d:"Elegir la mejor opción dadas las restricciones. Se usa análisis marginal: comparar BM y CM de la última unidad."},
+    {t:"Equilibrio", d:"Nadie tiene incentivo de cambiar. Ejemplo del prof: filas del supermercado — en equilibrio todas tardan igual, si una fuera más corta todos migrarían."},
+    {t:"Empirismo", d:"Las hipótesis se validan con datos. La evidencia empírica guía y corrige las teorías."},
+    {t:"Economía Positiva", d:"Describe hechos verificables. 'Si sube el precio, cae la demanda'. Se puede probar con datos."},
+    {t:"Economía Normativa", d:"Juicios de valor. 'El Estado debería subsidiar educación'. No verificable con datos."},
+    {t:"Costo de Oportunidad", d:"Valor de la mejor alternativa resignada. Al abrir un kiosco, el CO es el sueldo que dejás de ganar + el alquiler que podrías cobrar por el local."},
+    {t:"Análisis Marginal", d:"Comparar el beneficio y costo de UNA unidad más. Si BM>CM: producí/consumí más. Si BM<CM: reducí."},
+    {t:"Problema del Polizón", d:"Ejemplo del prof: estudiantes que comparten depto y nadie quiere limpiar. El interés individual choca con el colectivo → falla de mercado."},
+  ],
+  formulas:[
+    {title:"Condición de óptimo", formula:"BM = CM", vars:[{n:"BM",d:"beneficio marginal (última unidad)"},{n:"CM",d:"costo marginal (última unidad)"}], nota:"Mientras BM>CM: hacé más. Cuando BM<CM: hacé menos. El óptimo está en BM=CM."},
+    {title:"Costo de Oportunidad", formula:"CO = Valor de la mejor alternativa resignada", nota:"No es el precio pagado. Es lo que dejás de obtener."},
+  ],
+  ejercicios:[
+    {titulo:"Contaminación — Óptimo marginal (del profesor)",
+     enunciado:"Se puede reducir la contaminación 0–4 unidades. Encontrar el nivel óptimo.",
+     datos:["Red=0: BT=0, CT=0","Red=1: BT=20, CT=9","Red=2: BT=38, CT=20","Red=3: BT=54, CT=33","Red=4: BT=68, CT=48"],
+     pasos:["BM (ΔBT): BM1=20, BM2=18, BM3=16, BM4=14.",
+       "CM (ΔCT): CM1=9, CM2=11, CM3=13, CM4=15.",
+       "Red=1: BM(20)>CM(9)✓. Red=2: BM(18)>CM(11)✓. Red=3: BM(16)>CM(13)✓. Red=4: BM(14)<CM(15)✗.",
+       "Beneficio Neto: BN1=11, BN2=18, BN3=21(MAX), BN4=20.",
+       "Óptimo = 3 unidades (último donde BM≥CM y BN se maximiza)."],
+     respuesta:"Óptimo: 3 unidades de reducción. BN máximo = 21."},
+    {titulo:"Kiosco — Costo de oportunidad económico",
+     enunciado:"Persona abre un kiosco en su local. Ventas $3000/mes, costos explícitos $1500. Podría cobrar $500 de alquiler o ganar $800 en otro trabajo.",
+     datos:["Ventas: $3000","Costos explícitos: $1500","CO local: $500/mes","CO trabajo: $800/mes"],
+     pasos:["Ganancia contable: 3000 − 1500 = $1500.",
+       "CO total (implícito): 500 + 800 = $1300.",
+       "Costo económico: 1500 + 1300 = $2800.",
+       "Beneficio económico: 3000 − 2800 = $200."],
+     respuesta:"Beneficio económico = $200 (no $1500). El economista SIEMPRE incluye los costos de oportunidad implícitos."},
+  ],
+  tips:["Los 3 principios: OPTIMIZACIÓN, EQUILIBRIO y EMPIRISMO — memorizalos así.",
+    "Positivo = descripción verificable. Normativo = juicio de valor. Te van a preguntar la diferencia.",
+    "CO NO es el precio pagado: es lo que resignás al elegir esta opción.",
+    "Óptimo marginal: mientras BM>CM conviene seguir. El punto óptimo es BM=CM.",
+    "Equilibrio = nadie tiene incentivo de cambiar (ejemplo supermercado: filas iguales)."],
+},
 
-  /* ══════════════════════════════════════════════════════ CAP 9 */
-  {
-    id: "cap9",
-    numero: 9,
-    titulo: "Monopolio",
-    subtitulo: "Poder de mercado, ineficiencia y discriminación de precios",
-    color: "#B45309",
-    colorBg: "#B4530918",
-    colorBorder: "#B4530940",
-    emoji: "👑",
-    resumen: [
-      "Un monopolista es el único vendedor del mercado y enfrenta la curva de demanda del mercado con pendiente negativa: puede fijar el precio.",
-      "Como debe bajar el precio de TODAS las unidades para vender una más, su Ingreso Marginal es SIEMPRE menor que el precio (IM < P).",
-      "El monopolista maximiza beneficios donde IM = CM, pero cobra el precio que la demanda acepta a esa cantidad: P > IM = CM.",
-      "Resultado: menor producción y precio más alto que en competencia → pérdida irrecuperable de eficiencia (deadweight loss).",
-    ],
-    conceptos: [
-      { termino: "Monopolio", def: "Único vendedor en el mercado. Enfrenta la demanda del mercado completa: es fijador de precios (no tomador)." },
-      { termino: "Poder de Mercado", def: "Capacidad de fijar precios por encima del costo marginal. Surge de barreras de entrada." },
-      { termino: "Barreras de Entrada", def: "Obstáculos que impiden que nuevas empresas compitan. Pueden ser legales (patentes) o naturales (economías de escala, control de recursos)." },
-      { termino: "Monopolio Natural", def: "El CTM sigue decreciendo con Q: una sola empresa puede abastecer el mercado más eficientemente que varias. Ej.: agua, electricidad, infraestructura." },
-      { termino: "IM < P en Monopolio", def: "Para vender una unidad más, el monopolista debe bajar el precio de TODAS las unidades. Por eso IM < P siempre. La curva de IM tiene el doble de pendiente que la demanda." },
-      { termino: "Regla IM = CM", def: "El monopolista maximiza beneficios produciendo donde IM = CM, luego cobra el precio P de la curva de demanda a esa Q. Siempre P > CM." },
-      { termino: "Pérdida Irrecuperable (DWL)", def: "El monopolista produce menos que el óptimo social: el excedente 'destruido' que no va ni al consumidor ni al productor. Ineficiencia del monopolio." },
-      { termino: "Discriminación de Precios 1er Grado", def: "Cobra a cada consumidor su máxima disposición a pagar. Elimina DWL pero el monopolista captura TODO el excedente." },
-      { termino: "Discriminación de Precios 2do Grado", def: "Precios según cantidad comprada (descuentos por volumen). Ej.: paquetes de servicios." },
-      { termino: "Discriminación de Precios 3er Grado", def: "Precios distintos por características observables del comprador (edad, ubicación). Ej.: descuento estudiantes." },
-    ],
-    infografia: "monopolio",
-    tips: [
-      "Monopolio: IM < P SIEMPRE (pendiente de IM = doble de la pendiente de la demanda)",
-      "Maximización: producir hasta IM = CM, luego SUBIR hasta la curva de demanda para el precio",
-      "P > IM = CM: el monopolio siempre cobra más que el costo marginal",
-      "DWL = triángulo entre P_monopolio, Q_monopolio y la curva de demanda/CM",
-      "Competencia perfecta: P = CM = IM. Monopolio: P > CM = IM",
-      "Discriminación 1er grado → elimina DWL pero el monopolista se queda con TODO el EC",
-      "Discriminación 3er grado: IM₁ = IM₂ = CM. El mercado con menor elasticidad paga más precio",
-      "Monopolio natural: regulación óptima → P = CM (pero da pérdidas si CF > 0)",
-    ],
-    cuadro: [
-      { aspecto: "Número de vendedores", competencia: "Muchos", monopolio: "Uno" },
-      { aspecto: "Control del precio", competencia: "Ninguno (tomador)", monopolio: "Total (fijador)" },
-      { aspecto: "Curva de demanda", competencia: "Horizontal (perfectamente elástica)", monopolio: "Descendente (toda la demanda del mercado)" },
-      { aspecto: "Relación IM y P", competencia: "IM = P", monopolio: "IM < P" },
-      { aspecto: "Condición maximizadora", competencia: "P = CM", monopolio: "IM = CM, cobra P > CM" },
-      { aspecto: "Eficiencia", competencia: "Eficiente (P = CM)", monopolio: "Ineficiente (DWL)" },
-      { aspecto: "Beneficio largo plazo", competencia: "Cero (libre entrada)", monopolio: "Positivo (barreras)" },
-    ],
-  },
+{ id:"cap2", num:2, emoji:"📈", titulo:"Oferta y Demanda", sub:"Las fuerzas del mercado", pal:"cap2",
+  teoria:[
+    "Ley de la Demanda: relación NEGATIVA entre precio y cantidad demandada (ceteris paribus). La curva de demanda tiene pendiente negativa.",
+    "Ley de la Oferta: relación POSITIVA entre precio y cantidad ofrecida. La curva de oferta tiene pendiente positiva.",
+    "CRÍTICO — Movimiento vs. Desplazamiento: Si cambia el PRECIO del bien → movimiento a lo largo de la curva (no se desplaza). Si cambia CUALQUIER OTRA cosa → la curva entera se desplaza.",
+    "Demanda se desplaza por: ingreso, precios de bienes sustitutos/complementarios, preferencias, expectativas, nº compradores.",
+    "Oferta se desplaza por: costos de insumos, tecnología (fracking desplazó la oferta de petróleo a la derecha), precios de otros bienes producibles, nº vendedores.",
+  ],
+  conceptos:[
+    {t:"Disposición a Pagar (DAP)", d:"Máximo que un consumidor pagaría por una unidad adicional = beneficio marginal. La curva de demanda = suma horizontal de todas las DAP individuales."},
+    {t:"Disposición a Aceptar (DAA)", d:"Mínimo precio al que un vendedor vendería una unidad = costo marginal de producción. La curva de oferta = suma de todas las DAA."},
+    {t:"Bienes Sustitutos", d:"Nafta súper y nafta premium: si sube el precio de uno, sube la demanda del otro. Relación DIRECTA entre precio de A y demanda de B."},
+    {t:"Bienes Complementarios", d:"Autos y nafta: si sube el precio de los autos, cae la demanda de nafta. Relación INVERSA entre precio de A y demanda de B."},
+    {t:"Bien Normal vs Inferior", d:"Normal: si sube ingreso, sube demanda. Inferior: si sube ingreso, CAJA la demanda (ej: fideos baratos cuando te va mejor comés menos)."},
+    {t:"Elasticidad Precio Demanda", d:"Mide sensibilidad de Q_D ante cambios en P. |ε|>1: elástica (Q cambia mucho). |ε|<1: inelástica (Q cambia poco)."},
+  ],
+  formulas:[
+    {title:"Elasticidad Precio de la Demanda", formula:"ε_D = (Δ%Q_D) / (Δ%P)",
+     vars:[{n:"ε_D",d:"siempre negativa (ley de la demanda)"},{n:"Δ%Q_D",d:"variación % en cantidad"},{n:"Δ%P",d:"variación % en precio"}],
+     nota:"Si |ε|>1: elástica. |ε|<1: inelástica. |ε|=1: unitaria."},
+    {title:"Elasticidad Precio de la Oferta", formula:"ε_O = (Δ%Q_O) / (Δ%P)",
+     vars:[{n:"ε_O",d:"siempre positiva (ley de la oferta)"}],
+     nota:"Siempre positiva. El ejemplo del prof: ε_D ≈ −6 en el ejercicio Cachalote."},
+    {title:"Demanda de Mercado", formula:"Q_mercado = ΣQ_individuales(P)",
+     nota:"Suma HORIZONTAL de las curvas individuales a cada nivel de precio."},
+  ],
+  ejercicios:[
+    {titulo:"Cachalote S.A. — Elasticidad",
+     enunciado:"Demanda P=3500−100q. Equilibrio viejo Qe=5, Pe=3000. Nueva oferta P=1000+300q. Calcular nueva elasticidad precio de la demanda.",
+     datos:["Demanda: P = 3500 − 100q","Nueva oferta: P = 1000 + 300q","Equilibrio viejo: Q=5, P=3000"],
+     pasos:["Nuevo equilibrio: 1000+300q=3500−100q → 400q=2500 → Qe'=6.25. Pe'=1000+300×6.25=2875.",
+       "ΔQ = 6.25−5 = 1.25; Q_prom = 5.625; Δ%Q = (1.25/5.625)×100 = 22.2%.",
+       "ΔP = 2875−3000 = −125; P_prom = 2937.5; Δ%P = (−125/2937.5)×100 = −4.26%.",
+       "ε = 22.2/−4.26 ≈ −5.2 (el prof redondea a −6)."],
+     respuesta:"ε ≈ −5 a −6 (demanda muy elástica). Ante una caída de precios del ~4%, la cantidad demandada sube ~22%."},
+  ],
+  tips:["MOVIMIENTO: cambia el precio del MISMO bien → nos movemos SOBRE la curva (la curva no se mueve).",
+    "DESPLAZAMIENTO: cambia CUALQUIER OTRA COSA → la curva ENTERA se mueve.",
+    "Sustitutos: precio de A sube → demanda de B SUBE. Complementarios: precio de A sube → demanda de B BAJA.",
+    "La DAP (demanda) tiene pendiente negativa. La DAA (oferta) tiene pendiente positiva.",
+    "ExxonMobil: si el precio sube, conviene extraer a mayor profundidad → oferta sube. Fracking = tecnología que desplazó la oferta a la derecha."],
+  grafico:"od",
+},
 
-  /* ══════════════════════════════════════════════════════ CAP 11 */
-  {
-    id: "cap11",
-    numero: 11,
-    titulo: "GDP y Macroeconomía",
-    subtitulo: "Medición de la actividad económica agregada",
-    color: "#4338CA",
-    colorBg: "#4338CA18",
-    colorBorder: "#4338CA40",
-    emoji: "📊",
-    resumen: [
-      "El GDP (Producto Interno Bruto) mide el valor de mercado de todos los bienes y servicios finales producidos en un país durante un período.",
-      "Tres métodos equivalentes: por el gasto (C + I + G + NX), por el ingreso (suma de salarios, intereses, rentas y beneficios) y por el valor agregado.",
-      "GDP nominal usa precios corrientes; GDP real usa precios del año base: elimina el efecto inflación para medir crecimiento real.",
-      "El deflactor del PIB = (GDP Nominal / GDP Real) × 100: mide el nivel general de precios.",
-    ],
-    conceptos: [
-      { termino: "GDP (PIB)", def: "Valor de mercado de todos los bienes y servicios FINALES producidos dentro de un país en un período. Solo se cuentan los finales (evitar doble conteo)." },
-      { termino: "Método del Gasto", def: "GDP = C + I + G + NX. Suma todo el gasto de los distintos sectores de la economía." },
-      { termino: "Consumo (C)", def: "Gasto de los hogares en bienes y servicios. El componente más grande del GDP (≈60-70%)." },
-      { termino: "Inversión (I)", def: "Gasto en capital nuevo: maquinaria, construcción, variación de inventarios. Gasto de las empresas + construcción residencial." },
-      { termino: "Gasto Público (G)", def: "Gasto del gobierno en bienes y servicios. No incluye transferencias (jubilaciones, subsidios) porque no son producción." },
-      { termino: "Exportaciones Netas (NX)", def: "NX = X - M. Exportaciones (lo que el resto del mundo compra) menos Importaciones (lo que importamos). Puede ser negativo." },
-      { termino: "GDP Nominal", def: "Valor de la producción a precios del año en curso. Sube por mayor cantidad producida O por inflación." },
-      { termino: "GDP Real", def: "Valor de la producción a precios de un año base fijo. Elimina el efecto inflación. Mide el crecimiento genuino." },
-      { termino: "Deflactor del PIB", def: "Deflactor = (PIB Nominal / PIB Real) × 100. Indica cuánto subieron los precios. Deflactor > 100 si los precios subieron respecto al año base." },
-      { termino: "PNB vs PIB", def: "PIB: dentro de las fronteras del país (quién produce dónde). PNB: factores propiedad de residentes nacionales (sin importar dónde operan)." },
-    ],
-    infografia: "gdp",
-    tips: [
-      "GDP = C + I + G + NX — memorizar los cuatro componentes",
-      "TRANSFERENCIAS (jubilaciones, planes sociales) NO van en G: no son producción nueva",
-      "PIB NOMINAL: precios actuales. PIB REAL: precios del año base",
-      "Deflactor = (PIB Nominal / PIB Real) × 100",
-      "Si Deflactor > 100 → precios subieron respecto al año base",
-      "Tasa de inflación ≈ (Deflactor año t - Deflactor año t-1) / Deflactor t-1 × 100",
-      "PIB NO mide bienestar: ignora distribución, economía informal, ocio, externalidades, trabajo doméstico",
-      "Valor agregado = evitar doble conteo: solo contar el valor que AGREGA cada etapa",
-    ],
-    cuadro: [
-      { componente: "Consumo (C)", ejemplos: "Alimentos, ropa, servicios, autos", tipico: "≈ 65% del GDP" },
-      { componente: "Inversión (I)", ejemplos: "Maquinaria, construcción, inventarios", tipico: "≈ 15-20%" },
-      { componente: "Gasto Público (G)", ejemplos: "Salarios estatales, infraestructura, defensa", tipico: "≈ 15-25%" },
-      { componente: "Export. Netas (NX)", ejemplos: "Exportaciones - Importaciones", tipico: "Variable (puede ser negativo)" },
-    ],
-  },
+{ id:"cap3", num:3, emoji:"⚖️", titulo:"Equilibrio e Intervención", sub:"Precios máximos, mínimos y pérdida de eficiencia", pal:"cap3",
+  teoria:[
+    "Equilibrio: P* donde Q_O = Q_D. Es el precio que vacía el mercado.",
+    "Precio Máximo (techo): fijado POR DEBAJO del equilibrio → genera ESCASEZ (Q_D > Q_O). Ejemplo: control de alquileres.",
+    "Precio Mínimo (piso): fijado POR ENCIMA del equilibrio → genera EXCEDENTE (Q_O > Q_D). Ejemplo: salario mínimo.",
+    "Toda intervención aleja el precio del equilibrio y genera peso muerto (pérdida de eficiencia): ET < ET_libre.",
+  ],
+  conceptos:[
+    {t:"Excedente del Consumidor (EC)", d:"Área del triángulo entre la curva de demanda y el precio pagado. Lo que los compradores 'ganan' al pagar menos de su DAP máxima."},
+    {t:"Excedente del Productor (EP)", d:"Área del triángulo entre el precio recibido y la curva de oferta. Lo que los vendedores ganan al cobrar más que su DAA mínima."},
+    {t:"Excedente Total (ET)", d:"ET = EC + EP. Mide el bienestar total de la sociedad. Se maximiza en el equilibrio libre."},
+    {t:"Peso Muerto", d:"Pérdida de ET por alejarse del equilibrio. Es pura ineficiencia: nadie la captura, simplemente desaparece."},
+    {t:"Precio Máximo Efectivo", d:"Solo genera efectos si P_max < P_equilibrio. Si P_max > P_eq, el mercado no cambia."},
+  ],
+  formulas:[
+    {title:"Equilibrio: igualar O y D", formula:"Q_O(P) = Q_D(P) → Qe, Pe",
+     nota:"Igualar ecuaciones y despejar Q. Luego reemplazar en cualquiera para hallar P."},
+    {title:"Excedente del Consumidor", formula:"EC = (1/2) × Qe × (P_máx_D − Pe)",
+     vars:[{n:"P_máx_D",d:"precio al que Q=0 en la demanda (intercepto Y)"},{n:"Pe",d:"precio de equilibrio"},{n:"Qe",d:"cantidad de equilibrio"}],
+     nota:"Triángulo SOBRE el precio y BAJO la curva de demanda."},
+    {title:"Excedente del Productor", formula:"EP = (1/2) × Qe × (Pe − P_mín_O)",
+     vars:[{n:"P_mín_O",d:"precio al que Q=0 en la oferta (intercepto Y)"}],
+     nota:"Triángulo BAJO el precio y SOBRE la curva de oferta."},
+    {title:"Excedente Total", formula:"ET = EC + EP",
+     nota:"El mercado competitivo maximiza el ET. Cualquier desvío crea peso muerto."},
+  ],
+  ejercicios:[
+    {titulo:"Mercado — Equilibrio + Excedentes (del profesor)",
+     enunciado:"Oferta: P = 2q + 5. Demanda: P = 30 − 3q. Calcular equilibrio, EC, EP y ET.",
+     datos:["Oferta: P = 2q + 5 → intercepto P=5","Demanda: P = 30 − 3q → intercepto P=30"],
+     pasos:["Igualar: 2q+5 = 30−3q → 5q = 25 → Qe = 5.",
+       "Pe = 2(5)+5 = 15.",
+       "EC: altura = 30−15=15; EC = (1/2)×5×15 = 37.5.",
+       "EP: altura = 15−5=10; EP = (1/2)×5×10 = 25.",
+       "ET = 37.5 + 25 = 62.5."],
+     respuesta:"Qe=5, Pe=15. EC=37.5, EP=25, ET=62.5."},
+    {titulo:"Precio Máximo Pmax=10 — Pérdida de eficiencia",
+     enunciado:"Con el mismo mercado anterior (Qe=5, Pe=15, ET=62.5), el gobierno fija Pmax=10.",
+     datos:["Equilibrio libre: Qe=5, Pe=15, ET=62.5","Pmax=10 (efectivo porque 10<15)"],
+     pasos:["Con Pmax=10, la cantidad la fija la OFERTA: Q_O=(10−5)/2 = 2.5.",
+       "Nuevo EP: triángulo con base=2.5, altura=(10−5)=5. EP=(1/2)×2.5×5=6.25.",
+       "Nuevo EC: el resultado del profesor es EC=40.625 (se calcula como trapecio).",
+       "ET_nuevo = 40.625+6.25 = 46.875.",
+       "Pérdida de eficiencia = 62.5 − 46.875 = 15.625."],
+     respuesta:"Con Pmax=10: EC=40.625, EP=6.25, ET=46.875. Pérdida de eficiencia = 15.625."},
+    {titulo:"Cachalote S.A. — Equilibrio + Excedentes",
+     enunciado:"Oferta: P=1500+300q. Demanda: P=3500−100q. a) Equilibrio. b) EC, EP, ET.",
+     datos:["Oferta: P=1500+300q","Demanda: P=3500−100q"],
+     pasos:["1500+300q=3500−100q → 400q=2000 → Qe=5.",
+       "Pe=1500+300×5=3000.",
+       "EC: intercepto D=3500. Altura=3500−3000=500. EC=(1/2)×5×500=1250.",
+       "EP: intercepto O=1500. Altura=3000−1500=1500. EP=(1/2)×5×1500=3750.",
+       "ET=1250+3750=5000."],
+     respuesta:"Qe=5, Pe=3000. EC=1250, EP=3750, ET=5000."},
+  ],
+  tips:["Para hallar equilibrio: igualar P_O = P_D, despejar Q, luego reemplazar en una ecuación para P.",
+    "EC: triángulo ARRIBA del precio pagado. EP: triángulo ABAJO del precio recibido.",
+    "Pmax EFECTIVO solo si P_max < P_equilibrio. Si está encima, no cambia nada.",
+    "Con Pmax: la cantidad transada la fija la oferta (cuello de botella en el lado del vendedor).",
+    "Peso muerto = ET_libre − ET_con_intervención. Es lo que la sociedad pierde en total."],
+  grafico:"od",
+},
 
-  /* ══════════════════════════════════════════════════════ CAP 12 */
-  {
-    id: "cap12",
-    numero: 12,
-    titulo: "Crecimiento Económico",
-    subtitulo: "¿Por qué algunos países son ricos y otros pobres?",
-    color: "#065F46",
-    colorBg: "#065F4618",
-    colorBorder: "#065F4640",
-    emoji: "🚀",
-    resumen: [
-      "El crecimiento económico de largo plazo determina el nivel de vida de la población. Pequeñas diferencias en la tasa de crecimiento generan enormes diferencias en el nivel de vida a largo plazo.",
-      "La función de producción agregada: Y = A · f(K, H) relaciona la producción con los factores productivos. La productividad total de factores (A) representa la tecnología.",
-      "Capital físico (K) y capital humano (H) están sujetos a rendimientos decrecientes: no pueden sostener el crecimiento por sí solos.",
-      "La tecnología (A) es el motor del crecimiento sostenido: no tiene rendimientos decrecientes y desplaza toda la función de producción hacia arriba.",
-    ],
-    conceptos: [
-      { termino: "Función de Producción Agregada", def: "Y = A · f(K, H). Y = PIB, A = tecnología/PTF, K = capital físico, H = capital humano. Base del análisis del crecimiento." },
-      { termino: "Productividad Total de Factores (PTF / A)", def: "Eficiencia con que se usan los factores. Mide todo lo que impulsa el crecimiento más allá de K y H. Motor del crecimiento sostenido." },
-      { termino: "Capital Físico (K)", def: "Máquinas, equipos, infraestructura. Se acumula mediante ahorro e inversión (I = S). Sujeto a rendimientos decrecientes: cada unidad adicional aporta menos." },
-      { termino: "Capital Humano (H)", def: "Conocimientos, educación y habilidades de los trabajadores. Aumenta la productividad del trabajo. Tiene límite: la vida es finita." },
-      { termino: "Rendimientos Decrecientes del Capital", def: "Si aumentás K manteniendo A y H constantes, cada unidad adicional de K aporta menos al PIB. Por eso K solo no puede sostener el crecimiento." },
-      { termino: "Hipótesis de Convergencia", def: "Países pobres deberían crecer más rápido que países ricos porque tienen más capital por instalar y pueden adoptar tecnologías ya desarrolladas. El 'atajo' del desarrollo." },
-      { termino: "Instituciones Inclusivas", def: "Normas que protegen la propiedad privada, permiten libre mercado e incentivan la innovación. Causa fundamental del crecimiento según Acemoglu." },
-      { termino: "Instituciones Extractivas", def: "Instituciones que concentran el poder en élites y bloquean la innovación (temen la destrucción creativa política). Causa del estancamiento." },
-      { termino: "Destrucción Creativa", def: "Proceso (Schumpeter) donde nuevas tecnologías y empresas reemplazan a las antiguas. Motor del progreso pero amenaza para los que se benefician del statu quo." },
-      { termino: "Estado Estacionario", def: "Nivel de capital donde la inversión apenas compensa la depreciación. Sin cambio tecnológico (A constante), la economía converge al estado estacionario y el crecimiento se detiene." },
-    ],
-    infografia: "crecimiento",
-    tips: [
-      "Y = A · f(K, H) — los tres motores: A (tecnología), K (capital físico), H (capital humano)",
-      "PTF (A) = el único motor que NO tiene rendimientos decrecientes → único que sostiene crecimiento infinito",
-      "K y H tienen rendimientos DECRECIENTES → llevan a estado estacionario sin cambio tecnológico",
-      "CONVERGENCIA: países pobres crecen más rápido adoptando tecnología ya inventada",
-      "INSTITUCIONES: causa FUNDAMENTAL del crecimiento (más profunda que K, H o A)",
-      "Regla de los 70: años para duplicar el PIB ≈ 70 / tasa de crecimiento anual",
-      "Estado estacionario: inversión = depreciación → sin tecnología, el crecimiento se DETIENE",
-      "Acemoglu: instituciones INCLUSIVAS → crecimiento sostenido. EXTRACTIVAS → estancamiento",
-    ],
-    cuadro: [
-      { factor: "Capital Físico (K)", mecanismo: "Ahorro → Inversión → Acumulación", limite: "Rendimientos decrecientes → Estado estacionario", politica: "Incentivar el ahorro y la inversión" },
-      { factor: "Capital Humano (H)", mecanismo: "Educación, salud, capacitación", limite: "Vida finita; años de estudio reducen años activos", politica: "Invertir en educación pública" },
-      { factor: "Tecnología (A)", mecanismo: "I+D, innovación, adopción de tecnología", limite: "Sin rendimientos decrecientes — motor ilimitado", politica: "Patentes, universidades, I+D público" },
-      { factor: "Instituciones", mecanismo: "Protegen propiedad, incentivan esfuerzo", limite: "Difíciles de cambiar (path dependence)", politica: "Democratización, estado de derecho" },
-    ],
-  },
+{ id:"cap4", num:4, emoji:"🧠", titulo:"El Consumidor", sub:"Restricción presupuestaria y optimización", pal:"cap4",
+  teoria:[
+    "La restricción presupuestaria muestra todas las combinaciones de bienes que el consumidor puede adquirir con su ingreso M.",
+    "La pendiente de la restricción presupuestaria es −Px/Py, que equivale al costo de oportunidad de X en términos de Y.",
+    "El consumidor optimiza cuando iguala el beneficio marginal por peso gastado en todos los bienes: BM_x/P_x = BM_y/P_y.",
+    "Esto equivale a encontrar el punto de la restricción presupuestaria que toca la curva de indiferencia más alta posible.",
+    "Si BM_x/P_x > BM_y/P_y: conviene comprar más X y menos Y (el peso gasta mejor en X).",
+  ],
+  conceptos:[
+    {t:"Restricción Presupuestaria", d:"Px·Qx + Py·Qy = M. Muestra el límite de lo que se puede comprar. Pendiente = −Px/Py = costo de oportunidad."},
+    {t:"Interceptos", d:"Qx_máx = M/Px (si gasta todo en X). Qy_máx = M/Py (si gasta todo en Y)."},
+    {t:"Costo de Oportunidad (CO)", d:"CO de una unidad de X en términos de Y = Px/Py. Si ropa cuesta $200 y pantalón $400, CO de un pantalón = 2 remeras."},
+    {t:"Beneficio Marginal (BM)", d:"Satisfacción adicional de consumir una unidad más. Decreciente: cuanto más tengo de algo, menos me importa una unidad extra."},
+    {t:"Condición de Optimización", d:"BM_x/P_x = BM_y/P_y. El beneficio marginal por peso gastado debe igualarse en todos los bienes."},
+    {t:"Curvas de Indiferencia", d:"Muestran combinaciones que generan la misma satisfacción. Convexa al origen. El consumidor quiere llegar a la curva más alta posible."},
+  ],
+  formulas:[
+    {title:"Restricción Presupuestaria", formula:"Px·Qx + Py·Qy = M",
+     vars:[{n:"Px,Py",d:"precios de los bienes X e Y"},{n:"Qx,Qy",d:"cantidades consumidas"},{n:"M",d:"ingreso disponible"}],
+     nota:"Pendiente = −Px/Py. Intercepto en Y: M/Py. Intercepto en X: M/Px."},
+    {title:"Costo de Oportunidad de X", formula:"CO_x = Px / Py",
+     nota:"Unidades de Y a las que se renuncia por consumir 1 unidad más de X."},
+    {title:"Condición de Optimización", formula:"BM_x / Px = BM_y / Py",
+     nota:"'El mismo gusto por el gasto': el peso gastado en X y en Y rinde lo mismo. Si BM_x/Px > BM_y/Py → comprá más X."},
+  ],
+  ejercicios:[
+    {titulo:"Maya y los libros (del profesor)",
+     enunciado:"Maya gana $1000/mes. Ropa a $25, libros a $40. a) Ecuación y restricción. b) Interceptos. c) Si el libro sube a $50, nueva restricción.",
+     datos:["M=1000, P_ropa=25, P_libro=40 (luego P_libro=50)"],
+     pasos:["a) Ecuación: 25·Q_r + 40·Q_l = 1000.",
+       "b) Intercepto ropa: 1000/25=40. Intercepto libros: 1000/40=25.",
+       "Pendiente: Q_r = 40 − (40/25)·Q_l = 40 − 1.6·Q_l.",
+       "c) Nuevo P_libro=50: 25·Q_r + 50·Q_l = 1000.",
+       "Nuevo intercepto libros: 1000/50=20 (bajó de 25 a 20). El intercepto de ropa no cambia: 40.",
+       "Nueva pendiente: Q_r = 40 − 2·Q_l. El CO de un libro subió de 1.6 a 2 remeras."],
+     respuesta:"Con P_libro=40: Qr_max=40, Ql_max=25. Con P_libro=50: Qr_max=40, Ql_max=20, CO sube a 2 remeras."},
+    {titulo:"Jerséis y pantalones — Optimización BM/P (del profesor)",
+     enunciado:"M=$300, P_jersey=$25, P_pantalón=$50. Tabla de beneficios marginales dada. Encontrar la cesta óptima.",
+     datos:["M=300, P_j=25, P_p=50","Con 3 jerseys: BM_j=75, BM_j/P_j=3","Con 6 jerseys: BM_j=50, BM_j/P_j=2","Con 3 pantalones: BM_p=100, BM_p/P_p=2","Con 6 pantalones: BM_p=10 (muy bajo)"],
+     pasos:["Comparar BM/P en cada paso.",
+       "Con 3 jerseys (gastamos $75): BM_j/P_j=3. Con 3 pantalones: BM_p/P_p=2. El jersey rinde más → compramos más jerseys.",
+       "Con 6 jerseys (gastamos $150): BM_j/P_j=2. Con 3 pantalones: BM_p/P_p=2. Ahora son iguales → óptimo.",
+       "Gasto total: 6×25 + 3×50 = 150+150 = 300 = M ✓.",
+       "Verificar: BM_j/P_j = BM_p/P_p = 2. Condición de optimización cumplida."],
+     respuesta:"Óptimo: 6 jerseys + 3 pantalones. Gasto total = $300. BM por peso gastado = 2 en ambos bienes."},
+    {titulo:"Ropa — Costo de oportunidad",
+     enunciado:"M=$1600, P_remera=$200, P_pantalón=$400. b) CO de un pantalón. c) El pantalón sube a $800, nuevo CO.",
+     datos:["M=1600, P_r=200, P_p=400 (luego P_p=800)"],
+     pasos:["Ecuación: 200·Q_r + 400·Q_p = 1600.",
+       "Intercepto remeras: 1600/200=8. Intercepto pantalones: 1600/400=4.",
+       "CO de un pantalón = P_p/P_r = 400/200 = 2 remeras.",
+       "Con P_p=800: CO = 800/200 = 4 remeras. Cada pantalón cuesta 4 remeras ahora."],
+     respuesta:"CO pantalón original = 2 remeras. Con precio duplicado = 4 remeras."},
+  ],
+  tips:["La pendiente de la restricción = −Px/Py = CO de X en términos de Y.",
+    "Cuando sube el precio de un bien, SOLO ese intercepto cambia (el otro queda igual).",
+    "Optimización: BM_x/Px = BM_y/Py. Si el cociente es mayor para X, comprá más X.",
+    "El BM es DECRECIENTE: cuanto más tenés de algo, menos vale la siguiente unidad.",
+    "En el óptimo, el gasto agota todo el ingreso: Px·Qx* + Py·Qy* = M."],
+  grafico:"presupuesto",
+},
+
+{ id:"cap5", num:5, emoji:"🏭", titulo:"El Productor", sub:"Costos y equilibrio de la empresa competitiva", pal:"cap5",
+  teoria:[
+    "Costos fijos (CF): no varían con la producción (alquiler, maquinaria). Costos variables (CV): varían con Q (materiales, trabajo).",
+    "El costo marginal (CM) es el costo de producir una unidad adicional. La empresa maximiza beneficios cuando P = CM.",
+    "En competencia perfecta, la empresa es tomadora de precio: P = IM (el precio es igual al ingreso marginal).",
+    "Regla de cierre a corto plazo: si P < CVM → cierra (ni cubre los costos variables). Si P > CVM → opera aunque tenga pérdidas (al menos cubre los variables y algo de los fijos).",
+    "A largo plazo, si P < CTM → la empresa sale del mercado (tiene pérdidas económicas).",
+  ],
+  conceptos:[
+    {t:"Costo Marginal (CM)", d:"Costo de producir una unidad adicional. CM = ΔCT/ΔQ. La curva de CM tiene forma de U: primero baja (economías de escala), luego sube (rendimientos decrecientes)."},
+    {t:"Costo Total Medio (CTM)", d:"Costo promedio por unidad: CTM = CT/Q = CFM + CVM. La empresa tiene beneficios si P > CTM."},
+    {t:"Costo Variable Medio (CVM)", d:"CVM = CV/Q. Umbral de cierre a corto plazo: si P < CVM, la empresa debe cerrar inmediatamente."},
+    {t:"Costo Fijo Medio (CFM)", d:"CFM = CF/Q. Siempre decrece al aumentar Q (los fijos se 'diluyen')."},
+    {t:"Ingreso Total / Marginal", d:"IT = P × Q. IM = ΔIT/ΔQ. En competencia perfecta: IM = P (precio constante)."},
+    {t:"Beneficios Económicos", d:"Beneficios = IT − CT = (P − CTM) × Q. Si P>CTM: beneficios positivos. Si CTM>P>CVM: pérdidas pero opera. Si P<CVM: cierra."},
+  ],
+  formulas:[
+    {title:"Costos", formula:"CT = CF + CV  |  CTM = CT/Q  |  CVM = CV/Q  |  CFM = CF/Q",
+     vars:[{n:"CF",d:"costos fijos (constantes)"},{n:"CV",d:"costos variables"},{n:"CT",d:"costo total"}]},
+    {title:"Costo Marginal", formula:"CM = ΔCT / ΔQ",
+     nota:"Para funciones continuas: CM = derivada del CT respecto a Q. Ej: si CT=500+0.1Q², entonces CM=0.2Q."},
+    {title:"Equilibrio de la empresa competitiva", formula:"P = IM = CM  →  Q*",
+     nota:"La empresa maximiza beneficios produciendo donde el precio iguala el costo marginal."},
+    {title:"Beneficios", formula:"Beneficios = (P − CTM) × Q*",
+     vars:[{n:"P",d:"precio de mercado"},{n:"CTM",d:"costo total medio en Q*"},{n:"Q*",d:"cantidad óptima"}],
+     nota:"Si P>CTM: ganancias. Si P=CTM: beneficio económico=0. Si P<CTM pero P>CVM: pérdidas, pero conviene operar."},
+  ],
+  ejercicios:[
+    {titulo:"Nahum — ¿Operar o cerrar? (del profesor)",
+     enunciado:"Empresa Nahum. Q=100, P=$50, CTMe=$60, CVMe=$40. a) ¿Tiene beneficios o pérdidas? b) ¿Debería seguir operando?",
+     datos:["Q=100","P=$50","CTM=$60","CVM=$40"],
+     pasos:["a) Comparar P vs CTM: P(50) < CTM(60) → tiene PÉRDIDAS.",
+       "Pérdida total = (50−60)×100 = −$1000.",
+       "b) Comparar P vs CVM: P(50) > CVM(40) → el precio cubre los costos variables.",
+       "Si opera: pérdida = −$1000. Si cierra: pierde solo los CF. CF = (CTM−CVM)×Q = (60−40)×100 = $2000.",
+       "Como pérdida operando ($1000) < pérdida cerrando ($2000), conviene SEGUIR OPERANDO a corto plazo.",
+       "A largo plazo debe salir del mercado (P < CTM)."],
+     respuesta:"Tiene pérdidas ($1000), pero DEBE SEGUIR OPERANDO a corto plazo porque P($50) > CVM($40). A largo plazo debe salir."},
+    {titulo:"Camisetas Argonia — Función cuadrática (del profesor)",
+     enunciado:"P=$20. CT = 500 + 0.1·c². a) CF. b) CVMe. c) Cantidad óptima. d) CTMe. e) ¿Opera?",
+     datos:["P=20","CT = 500 + 0.1·c²","CM = 0.2·c (derivada del CT)"],
+     pasos:["a) CF: cuando Q=0, CT=500. CF=$500.",
+       "b) CV = CT − CF = 0.1·c². CVM = CV/c = 0.1c.",
+       "c) Óptimo: P=CM → 20=0.2c → c*=100.",
+       "d) CTM(100) = (500 + 0.1×100²)/100 = (500+1000)/100 = 15.",
+       "e) P(20) > CVM(100)=0.1×100=10. P(20) > CTM=15. Opera y tiene beneficios.",
+       "Beneficios = (P−CTM)×Q = (20−15)×100 = $500."],
+     respuesta:"c*=100, CTM=15, CVM=10. Opera y tiene beneficios = $500."},
+    {titulo:"Contratación de trabajadores — VPMT (del profesor)",
+     enunciado:"Empresa competitiva. Precio del bien=$9, Salario=$27. ¿Cuántos trabajadores contratar?",
+     datos:["P=$9","Salario=$27","5 trabajadores: PT=42, PMT=4","6 trabajadores: PT=45, PMT=3"],
+     pasos:["VPMT = PMT × P.",
+       "Con 5 trabajadores: VPMT = 4×9 = $36. Como $36 > $27 (salario), conviene contratar el 6to.",
+       "Con 6 trabajadores: VPMT = 3×9 = $27. VPMT = Salario → óptimo."],
+     respuesta:"Contratar 6 trabajadores. Es el punto donde VPMT($27) = Salario($27)."},
+  ],
+  tips:["Regla de cierre CORTO PLAZO: si P < CVM → cerrá YA. Si P > CVM → seguí (aunque pierdas).",
+    "Regla de salida LARGO PLAZO: si P < CTM → salí del mercado (pérdidas económicas).",
+    "En competencia perfecta: P = IM. La empresa maximiza donde P = CM.",
+    "Para CT cuadrático (CT = CF + a·Q²): CM = 2a·Q. No olvides derivar.",
+    "VPMT = PMT × P. Contratás trabajadores mientras VPMT > Salario. Óptimo: VPMT = Salario."],
+},
+
+{ id:"cap6", num:6, emoji:"🎯", titulo:"Eficiencia de Mercado", sub:"La mano invisible y el excedente social", pal:"cap6",
+  teoria:[
+    "La 'mano invisible' (Adam Smith): los mercados competitivos, a través de los precios, asignan los recursos eficientemente sin coordinación central.",
+    "El equilibrio competitivo maximiza el Excedente Total (EC + EP): ninguna otra asignación puede aumentar el bienestar total.",
+    "La eficiencia significa que todos los intercambios mutuamente beneficiosos se realizan. No hay unidades sin producir donde el valor para el comprador supera el costo para el vendedor.",
+    "Los mercados FALLAN cuando hay externalidades, bienes públicos, información asimétrica o poder de mercado. En esos casos, la intervención puede mejorar el bienestar.",
+    "La Caja de Edgeworth muestra que el equilibrio competitivo es Pareto eficiente: no se puede mejorar a alguien sin empeorar a otro.",
+  ],
+  conceptos:[
+    {t:"Eficiencia de Pareto", d:"Asignación donde no se puede mejorar a nadie sin empeorar a alguien más. El equilibrio competitivo es Pareto eficiente."},
+    {t:"Mano Invisible", d:"El sistema de precios coordina las decisiones descentralizadas de compradores y vendedores logrando eficiencia social sin dirección central."},
+    {t:"Peso Muerto", d:"Pérdida de excedente total por alejarse del equilibrio. Triángulo de ineficiencia que no captura nadie."},
+    {t:"Falla de Mercado", d:"Situación donde el mercado no alcanza el óptimo social: externalidades, bienes públicos, poder de mercado, información asimétrica."},
+    {t:"Redistribución vs Eficiencia", d:"El mercado es eficiente pero no necesariamente equitativo. Una política puede ser eficiente pero injusta, o justa pero ineficiente."},
+  ],
+  formulas:[
+    {title:"Excedente del Consumidor", formula:"EC = (1/2) × Qe × (P_D(0) − Pe)",
+     nota:"P_D(0) = precio al que la demanda es cero (intercepto en Y de la curva de demanda)."},
+    {title:"Excedente del Productor", formula:"EP = (1/2) × Qe × (Pe − P_O(0))",
+     nota:"P_O(0) = precio al que la oferta es cero (intercepto en Y de la curva de oferta)."},
+    {title:"Excedente Total", formula:"ET = EC + EP",
+     nota:"Se maximiza en el equilibrio competitivo. Cualquier precio diferente genera un peso muerto."},
+    {title:"Pérdida de Eficiencia (Peso Muerto)", formula:"PM = ET_libre − ET_con_intervención",
+     nota:"También = área del triángulo formado por la 'brecha' entre O y D en la cantidad transada con intervención."},
+  ],
+  ejercicios:[
+    {titulo:"Mercado con intervención — comparación de ET",
+     enunciado:"Mercado: O: P=2q+5, D: P=30−3q. Comparar ET libre vs. con impuesto que sube el costo en $6 (nueva oferta: P=2q+11).",
+     datos:["O original: P=2q+5","O con impuesto: P=2q+11","D: P=30−3q"],
+     pasos:["Equilibrio libre: Qe=5, Pe=15, EC=37.5, EP=25, ET=62.5.",
+       "Con impuesto (O nueva=2q+11): 2q+11=30−3q → 5q=19 → Qe'=3.8.",
+       "Pe' = 2(3.8)+11 = 18.6.",
+       "EC' = (1/2)×3.8×(30−18.6) = (1/2)×3.8×11.4 = 21.66.",
+       "EP' = (1/2)×3.8×(12.6−5) = (1/2)×3.8×7.6 = 14.44.",
+       "ET' = 21.66+14.44 = 36.1. Recaudación impuesto = 6×3.8=22.8.",
+       "Peso muerto = 62.5 − (36.1+22.8) = 3.6 (triangulito de ineficiencia)."],
+     respuesta:"El impuesto genera una recaudación de $22.8 y un peso muerto de ~$3.6."},
+  ],
+  tips:["La mano invisible funciona SOLO si los mercados son competitivos y sin fallas.",
+    "EC+EP se maximiza en el equilibrio libre. Cualquier intervención crea peso muerto.",
+    "No confundir eficiencia (ET total) con equidad (quién se queda con qué parte del ET).",
+    "El peso muerto es el triángulo que 'desaparece' → nadie lo captura, es pura pérdida social.",
+    "Fallas de mercado: externalidades, bienes públicos, poder de mercado, info asimétrica → justifican intervención."],
+  grafico:"od",
+},
+
+{ id:"cap7", num:7, emoji:"⚠️", titulo:"Externalidades y Bienes Públicos", sub:"Fallas de mercado y rol del Estado", pal:"cap7",
+  teoria:[
+    "Externalidad: cuando una acción afecta a terceros que no participan en la transacción y ese efecto no se refleja en los precios.",
+    "Externalidad NEGATIVA (ej. contaminación): el productor impone un costo a terceros → el mercado SOBREPROUCE respecto al óptimo social.",
+    "Externalidad POSITIVA (ej. educación, vacunación): el productor genera beneficios a terceros → el mercado INFRAPROUCE respecto al óptimo social.",
+    "Soluciones privadas: Teorema de Coase — si los derechos de propiedad están bien definidos y los costos de negociación son bajos, las partes llegan al óptimo por sí solas.",
+    "Soluciones públicas: impuesto pigouviano (externalidad negativa) = cantidad igual al daño marginal externo. Subsidio (externalidad positiva) = beneficio marginal externo.",
+  ],
+  conceptos:[
+    {t:"Externalidad Negativa", d:"El costo social > costo privado. El mercado produce demasiado. Solución: impuesto pigouviano = daño marginal externo. Desplaza la oferta a la izquierda hasta el óptimo social."},
+    {t:"Externalidad Positiva", d:"El beneficio social > beneficio privado. El mercado produce poco. Solución: subsidio = beneficio marginal externo. Desplaza la demanda a la derecha."},
+    {t:"Teorema de Coase", d:"Con derechos de propiedad bien definidos y costos de transacción bajos, las partes negocian y llegan al óptimo social sin intervención estatal. Aplica solo cuando hay pocos involucrados."},
+    {t:"Bien Público", d:"No rival (mi consumo no reduce el de otro) y no excluible (no se puede excluir a quien no paga). Ej: defensa nacional, faros. El mercado los subproduce → problema del polizón."},
+    {t:"Bien Privado", d:"Rival y excluible. El mercado los provee eficientemente."},
+    {t:"Bien Común (de club)", d:"No excluible pero rival. Ejemplo: banco de peces del océano. Sin regulación → tragedia de los bienes comunes."},
+    {t:"Tragedia de los Bienes Comunes", d:"Cuando un recurso es rival pero no excluible, cada individuo tiene incentivo a sobreusarlo → el recurso se agota. Solución: regulación, privatización o normas sociales."},
+    {t:"Impuesto Pigouviano", d:"Impuesto = externalidad marginal negativa. Hace que el productor internalice el costo social. Lleva la producción al óptimo social."},
+  ],
+  formulas:[
+    {title:"Costo Social vs Privado (externalidad negativa)", formula:"C_social = C_privado + Daño externo marginal",
+     nota:"El mercado iguala P=C_privado. El óptimo social exige P=C_social. El impuesto pigouviano cierra esa brecha."},
+    {title:"Beneficio Social vs Privado (externalidad positiva)", formula:"B_social = B_privado + Beneficio externo marginal",
+     nota:"El mercado iguala D_privada. El óptimo social exige D_social. El subsidio eleva la demanda efectiva."},
+    {title:"Bienes: clasificación", formula:"Rival × Excluible → 4 tipos",
+     vars:[{n:"Privado",d:"rival+excluible: pan, ropa"},{n:"Público",d:"no rival+no excluible: defensa"},{n:"Club",d:"no rival+excluible: Netflix"},{n:"Común",d:"rival+no excluible: banco de peces"}],
+     nota:"Solo los bienes públicos y comunes son problemáticos para el mercado."},
+  ],
+  ejercicios:[
+    {titulo:"Clasificar bienes y fallas de mercado",
+     enunciado:"Clasificar: (a) defensa nacional, (b) banco de peces del océano, (c) Netflix, (d) una manzana. ¿Cuál falla el mercado?",
+     datos:["Dimensiones: Rival (mi consumo reduce el disponible) y Excluible (puedo cobrar/excluir)"],
+     pasos:["a) Defensa: No rival (que me defienda no impide que te defienda a vos) y No excluible (no puedo negar defensa a un ciudadano) → BIEN PÚBLICO. Problema del polizón.",
+       "b) Banco de peces: Rival (si pesco uno hay uno menos) y No excluible (el océano es abierto) → BIEN COMÚN. Tragedia de los comunes.",
+       "c) Netflix: No rival (que yo vea no impide que veas) y Excluible (te cobran) → BIEN DE CLUB. Mercado funciona.",
+       "d) Manzana: Rival y Excluible → BIEN PRIVADO. Mercado funciona perfectamente."],
+     respuesta:"Falla el mercado en (a) y (b). Defensa: Estado debe proveerla. Peces: regulación para evitar sobreexplotación."},
+    {titulo:"Externalidad negativa — Impuesto pigouviano",
+     enunciado:"Una fábrica contamina. C_privado=50, daño a terceros=20 por unidad. El mercado produce Q=100. ¿Cuál es el impuesto correcto y qué pasa con Q?",
+     datos:["C_privado = 50","Daño externo = 20","Q_mercado = 100"],
+     pasos:["C_social = C_privado + daño = 50 + 20 = 70.",
+       "El mercado iguala P=50 y produce Q=100 (demasiado).",
+       "El impuesto pigouviano = daño marginal = $20 por unidad.",
+       "Con el impuesto: C_efectivo = 50+20=70. La empresa sube su costo marginal y reduce Q hasta el óptimo social.",
+       "El óptimo social es menor que 100 (la empresa internaliza el costo externo)."],
+     respuesta:"Impuesto pigouviano = $20/unidad. Eleva el CM privado al nivel social, reduciendo la producción al óptimo social."},
+  ],
+  tips:["Ext. negativa → SOBREPRODUCCIÓN → impuesto pigouviano = daño marginal.",
+    "Ext. positiva → INFRAPRODUCCIÓN → subsidio = beneficio marginal externo.",
+    "Coase solo aplica con POCOS involucrados y bajos costos de transacción (no sirve para contaminación masiva).",
+    "Bien público: NO rival + NO excluible → polizón → Estado debe proveer.",
+    "Bien común: rival + NO excluible → tragedia de los comunes → regulación o privatización."],
+},
+
+{ id:"cap9", num:9, emoji:"🏰", titulo:"Monopolio", sub:"Poder de mercado y pérdida de eficiencia", pal:"cap9",
+  teoria:[
+    "El monopolista es el único vendedor y enfrenta la curva de demanda de mercado completa. Tiene poder de precio (price maker).",
+    "Para vender más, el monopolista debe bajar el precio a TODOS los compradores (demanda lineal decreciente). Por eso el Ingreso Marginal (IM) < Precio.",
+    "REGLA CLAVE: Si la demanda es P = a − b·Q, entonces el IM = a − 2b·Q. El IM tiene el mismo intercepto pero el DOBLE de pendiente.",
+    "El monopolista maximiza beneficios donde IM = CM (igual que cualquier empresa), pero a diferencia de la competencia perfecta, P > CM en el equilibrio.",
+    "El monopolio genera pérdida de eficiencia (peso muerto): produce menos de lo socialmente óptimo y cobra más.",
+  ],
+  conceptos:[
+    {t:"Ingreso Marginal del Monopolista", d:"IM = ΔIT/ΔQ. Para demanda lineal P=a−bQ: IT=aQ−bQ², IM=a−2bQ. El IM siempre cae más rápido que el precio."},
+    {t:"Regla del Doble de Pendiente", d:"Si la demanda es P = a − b·Q, entonces IM = a − 2b·Q. Mismo intercepto, doble pendiente. El IM corta el eje horizontal a la mitad del tramo de la demanda."},
+    {t:"Condición de Maximización", d:"IM = CM. El monopolista produce Q* donde IM=CM y cobra el precio P* que los consumidores están dispuestos a pagar por Q* (lee el precio de la curva de demanda, NO del IM)."},
+    {t:"Precio de Monopolio", d:"P_monopolio > CM. La diferencia P−CM es el 'markup' de monopolio. Esta diferencia genera peso muerto."},
+    {t:"Pérdida de Peso Muerto", d:"Triángulo entre la curva de demanda, el IM y la línea CM, entre Q_monopolio y Q_competitivo. El monopolio produce demasiado poco."},
+    {t:"Discriminación de Precios", d:"El monopolista cobra precios diferentes a distintos consumidores según su disposición a pagar. Con discriminación perfecta, elimina todo el EC y no hay peso muerto."},
+  ],
+  formulas:[
+    {title:"Demanda lineal → Ingreso Marginal", formula:"Si P = a − b·Q  →  IM = a − 2b·Q",
+     nota:"SIEMPRE: mismo intercepto (a), doble pendiente (2b). El IM cruza el eje Q en Q=a/(2b), exactamente en la mitad."},
+    {title:"Ingreso Marginal (fórmula general)", formula:"IM = ΔIT / ΔQ = P + Q·(ΔP/ΔQ)",
+     nota:"Como ΔP/ΔQ < 0, el IM < P. El monopolista pierde algo del precio de las unidades anteriores al bajar el precio."},
+    {title:"Equilibrio del Monopolista", formula:"IM = CM  →  Q*  →  P* = D(Q*)",
+     nota:"1) Hallar Q* donde IM=CM. 2) El precio P* se lee de la CURVA DE DEMANDA, no del IM."},
+    {title:"Beneficios del Monopolista", formula:"Beneficios = (P* − CTM(Q*)) × Q*",
+     nota:"Rectángulo de beneficios en el gráfico: altura = P*−CTM, base = Q*."},
+  ],
+  ejercicios:[
+    {titulo:"Monopolio con tabla discreta — CM=$12 (del profesor)",
+     enunciado:"Monopolista con CM constante=$12. Tabla de demanda: Q=2→P=18; Q=3→P=16; Q=4→P=14. Encontrar Q*, P* y beneficios.",
+     datos:["CM constante = 12","Q=2: P=18, IT=36","Q=3: P=16, IT=48","Q=4: P=14, IT=56"],
+     pasos:["IM entre Q=2 y Q=3: ΔIT = 48−36 = 12. IM=12.",
+       "IM entre Q=3 y Q=4: ΔIT = 56−48 = 8. IM=8.",
+       "Condición IM=CM: en Q=3, IM=12=CM=12. ✓",
+       "En Q=4: IM=8 < CM=12 → no conviene producir más.",
+       "P* = P cuando Q=3 = 16.",
+       "Beneficios: necesitamos CTM. Si CM=CTM=12 (sin costos fijos): Benef=(16−12)×3=12."],
+     respuesta:"Q*=3, P*=$16, Beneficios=$12. El óptimo es donde IM(12)=CM(12)."},
+    {titulo:"Monopolio Claritin — Tabla completa (del profesor)",
+     enunciado:"Monopolista farmacéutico. CM=$1. Tabla parcial de demanda:",
+     datos:["Q=400M: P=$4.00, IT=$1600M, IM=2, CM=1, CTM=1.025","Q=500M: P=$3.50, IT=$1750M, IM=1, CM=1, CTM=1.020","Q=600M: P=$3.00, IT=$1800M, IM=0, CM=1, CTM=1.017"],
+     pasos:["Buscar donde IM=CM: en Q=500M, IM=1=CM=1. ✓",
+       "En Q=600M: IM=0 < CM=1. No conviene producir más.",
+       "P* = $3.50 (precio de la demanda en Q=500M).",
+       "Beneficios = (P−CTM)×Q = (3.50−1.020)×500M = 2.48×500M ≈ $1240M."],
+     respuesta:"Q*=500M, P*=$3.50, Beneficios≈$1240M."},
+    {titulo:"Monopolio demanda lineal P=24−Q",
+     enunciado:"Demanda P=24−Q, CM constante=$4. Hallar Q*, P*, beneficios y comparar con competencia perfecta.",
+     datos:["Demanda: P=24−Q","CM constante = 4"],
+     pasos:["IM = 24−2Q (doble pendiente).",
+       "IM=CM: 24−2Q=4 → 2Q=20 → Q*=10.",
+       "P* = 24−10=14. (Lee de la DEMANDA, no del IM.)",
+       "Beneficios = (14−4)×10 = 100.",
+       "Competencia perfecta: P=CM → 24−Q=4 → Q_c=20, P_c=4.",
+       "Pérdida de peso muerto = (1/2)×(Q_c−Q*)×(P*−CM) = (1/2)×10×10 = 50."],
+     respuesta:"Q*=10, P*=$14, Beneficios=$100. Peso muerto vs competencia perfecta = $50."},
+  ],
+  tips:["IM de demanda lineal: MISMO INTERCEPTO, DOBLE PENDIENTE. Memorizar esto.",
+    "El precio P* se lee de la CURVA DE DEMANDA en Q*. Nunca del IM.",
+    "Pasos: (1) IM=CM → Q*. (2) D(Q*)→ P*. (3) (P*−CTM)×Q* → beneficios.",
+    "El monopolista produce MENOS y cobra MÁS que la competencia perfecta → peso muerto.",
+    "Con CM constante y demanda lineal: Q* = (a−CM)/(2b) y P* = (a+CM)/2."],
+  grafico:"monopolio",
+},
+
+{ id:"cap11", num:11, emoji:"📊", titulo:"GDP y Macroeconomía", sub:"Medición del nivel de actividad económica", pal:"cap11",
+  teoria:[
+    "El GDP (Producto Interno Bruto / PIB) es el valor de mercado de todos los bienes y servicios FINALES producidos DENTRO de las fronteras de un país en un período.",
+    "Identidad fundamental: Producción = Gasto = Ingreso. Tres enfoques diferentes para medir lo mismo.",
+    "Componentes del GDP por el gasto: Y = C + I + G + (X−M). Consumo (C) es el mayor componente (~70% en EEUU).",
+    "GDP Nominal: valorado a precios corrientes. GDP Real: valorado a precios de un año base. El Real mide el crecimiento genuino sin el efecto de la inflación.",
+    "Deflactor del PIB y el IPC son dos formas de medir el nivel de precios (inflación).",
+  ],
+  conceptos:[
+    {t:"GDP (PIB)", d:"Valor de mercado de todos los bienes y servicios FINALES producidos DENTRO de las fronteras de un país en un período. Excluye bienes intermedios (para evitar doble contabilización)."},
+    {t:"Bienes Finales vs Intermedios", d:"Final: llega al consumidor final (el pan que compra una persona). Intermedio: insumo para producir otro bien (la harina que compra la panadería). Solo se cuenta el final."},
+    {t:"GDP Nominal", d:"Valúa la producción a precios del año corriente. Sube si aumenta la producción O si suben los precios."},
+    {t:"GDP Real", d:"Valúa la producción a precios de un año base fijo. Solo sube si aumenta la producción genuina. Permite comparar años."},
+    {t:"Deflactor del PIB", d:"Deflactor = (PIB Nominal / PIB Real) × 100. Mide el nivel de precios de TODOS los bienes producidos en el país."},
+    {t:"IPC (Índice de Precios al Consumidor)", d:"IPC = (costo de cesta actual / costo de cesta año base) × 100. Mide el costo de una 'cesta de consumo' típica. A diferencia del deflactor, incluye importaciones pero no bienes de capital."},
+    {t:"Inflación", d:"Tasa de variación del nivel de precios. Inflación = (IPC₂ − IPC₁) / IPC₁ × 100. O con deflactor."},
+  ],
+  formulas:[
+    {title:"GDP por el Gasto", formula:"Y = C + I + G + (X − M)",
+     vars:[{n:"C",d:"consumo privado"},{n:"I",d:"inversión (nueva maquinaria, construcción)"},{n:"G",d:"gasto público (excluye transferencias)"},{n:"X",d:"exportaciones"},{n:"M",d:"importaciones (se resta)"}],
+     nota:"NX = X−M son las exportaciones netas. Si X>M: superávit comercial."},
+    {title:"GDP Real", formula:"GDP Real = GDP Nominal / (Deflactor/100)",
+     nota:"O: valorar la producción del año corriente a precios del año base."},
+    {title:"Deflactor del PIB", formula:"Deflactor = (PIB Nominal / PIB Real) × 100",
+     nota:"Deflactor = 100 en el año base. Si deflactor = 128.6, los precios subieron 28.6% desde el año base."},
+    {title:"IPC", formula:"IPC = (Costo cesta año t / Costo cesta año base) × 100",
+     nota:"Cesta fija de bienes típicos del consumidor."},
+    {title:"Tasa de Inflación", formula:"π = (IPC₂ − IPC₁) / IPC₁ × 100",
+     nota:"O: (Deflactor₂ − Deflactor₁) / Deflactor₁ × 100."},
+  ],
+  ejercicios:[
+    {titulo:"Fordica — 3 enfoques del GDP (del libro)",
+     enunciado:"El país 'Fordica' solo produce autos. Fabrica 5 millones a $30.000 c/u. Calcular el GDP por los 3 enfoques.",
+     datos:["Producción: 5M autos × $30.000 = $150.000M","Los autos son el único bien final"],
+     pasos:["Por la PRODUCCIÓN: 5M × $30.000 = $150.000M.",
+       "Por el GASTO: los compradores (hogares, empresas, gobierno, extranjeros) gastan en total $150.000M.",
+       "Por el INGRESO: los trabajadores, accionistas y dueños del capital de las automotrices reciben en salarios + beneficios + intereses = $150.000M.",
+       "Los tres enfoques dan el mismo número: $150.000M. La identidad Producción=Gasto=Ingreso se cumple."],
+     respuesta:"GDP Fordica = $150.000 millones por cualquiera de los 3 enfoques."},
+    {titulo:"Fords y Chevrolets — Nominal vs Real (del libro)",
+     enunciado:"Año base 2012: 10 Fords a $30K + 5 Chevys a $20K. Año 2013: 10 Fords a $40K + 20 Chevys a $25K. Calcular GDP nominal 2013, real 2013, deflactor e inflación.",
+     datos:["2012: 10F×$30K + 5C×$20K","2013 cantidades: 10F + 20C","2013 precios: Ford=$40K, Chevy=$25K"],
+     pasos:["GDP Real 2012 (año base): 10×30K + 5×20K = 300K+100K = $400K.",
+       "GDP Nominal 2013: 10×40K + 20×25K = 400K+500K = $900K.",
+       "GDP Real 2013 (precios del año base 2012): 10×30K + 20×20K = 300K+400K = $700K.",
+       "Deflactor 2013 = (900K/700K)×100 = 128.6.",
+       "Inflación 2012→2013 = (128.6−100)/100×100 = 28.6%."],
+     respuesta:"PIB Real 2013=$700K. PIB Nominal 2013=$900K. Deflactor=128.6. Inflación=28.6%."},
+    {titulo:"Calcular IPC e inflación",
+     enunciado:"Cesta: 2kg pan ($5/kg) + 1 litro leche ($3). En el año siguiente: pan=$6/kg, leche=$3.50. Calcular IPC y tasa de inflación.",
+     datos:["Año base: 2kg×$5 + 1L×$3 = $13","Año siguiente: 2kg×$6 + 1L×$3.50"],
+     pasos:["Costo cesta año base: 2×5 + 1×3 = $13.",
+       "Costo cesta año siguiente: 2×6 + 1×3.50 = 12+3.50 = $15.50.",
+       "IPC año base = (13/13)×100 = 100.",
+       "IPC año siguiente = (15.50/13)×100 = 119.2.",
+       "Inflación = (119.2−100)/100×100 = 19.2%."],
+     respuesta:"IPC = 119.2. Tasa de inflación = 19.2%."},
+  ],
+  tips:["Y = C + I + G + NX. El mayor componente siempre es C (consumo).",
+    "GDP Nominal incluye inflación. GDP Real = crecimiento genuino. Real sirve para comparar años.",
+    "Deflactor = (Nominal/Real)×100. Si deflactor > 100 → hubo inflación desde el año base.",
+    "IPC usa cesta FIJA de consumo. Deflactor abarca TODOS los bienes producidos. Son medidas distintas.",
+    "Inflación = variación % del nivel de precios. Si IPC pasa de 100 a 128.6 → inflación del 28.6%."],
+},
+
+{ id:"cap12", num:12, emoji:"🌱", titulo:"Crecimiento Económico", sub:"Capital, tecnología e instituciones", pal:"cap12",
+  teoria:[
+    "El crecimiento económico es el aumento del GDP real per cápita a lo largo del tiempo. Tiene efecto compuesto: diferencias pequeñas en la tasa de crecimiento llevan a enormes diferencias a largo plazo.",
+    "La función de producción agregada: Y = A × F(K, H). La producción depende de tecnología (A), capital físico (K) y capital humano (H).",
+    "Rendimientos decrecientes del capital: manteniendo H y A constantes, cada unidad adicional de K genera menos producto adicional. Por eso el capital solo no puede generar crecimiento sostenido.",
+    "La tecnología (A) puede superar los rendimientos decrecientes: desplaza toda la función de producción hacia arriba y permite crecimiento sostenido.",
+    "Las instituciones son la causa FUNDAMENTAL del crecimiento: protegen la propiedad, hacen cumplir contratos y crean los incentivos para invertir e innovar.",
+  ],
+  conceptos:[
+    {t:"Función de Producción Cobb-Douglas", d:"Y = A × K^(1/3) × H^(2/3). K: capital físico. H: capital humano (eficiencia laboral). A: productividad total de los factores (tecnología). Los exponentes suman 1 → rendimientos constantes a escala."},
+    {t:"Rendimientos Decrecientes del Capital", d:"Cada unidad adicional de K produce menos Y (con H y A constantes). Implica que países pobres con poco capital crecen más rápido al acumular capital (convergencia condicional)."},
+    {t:"Productividad Total de los Factores (A)", d:"También llamada tecnología o eficiencia. Mide cuánto produce la economía más allá de lo explicado por K y H. La diferencia EEUU−India se explica principalmente por A."},
+    {t:"Capital Humano (H)", d:"Unidades de eficiencia del trabajo = cantidad de trabajadores × productividad promedio. Depende de educación, salud y habilidades."},
+    {t:"Instituciones Inclusivas", d:"Protegen la propiedad privada, hacen cumplir contratos, permiten mercados libres. Generan incentivos para invertir e innovar → crecimiento."},
+    {t:"Instituciones Extractivas", d:"Dictaduras que no protegen la propiedad. Bloquean la 'destrucción creativa' porque las élites temen perder poder → estancamiento."},
+    {t:"Destrucción Creativa (Schumpeter)", d:"Las nuevas tecnologías reemplazan las viejas, destruyendo negocios establecidos. Las instituciones extractivas la bloquean para proteger a las élites."},
+    {t:"Ejemplo: Corea del Norte vs Sur", d:"Geográficamente y culturalmente idénticos en 1947. En 2010: Corea del Sur: $26.609 per cápita. Corea del Norte: $1.612. Única diferencia: instituciones."},
+  ],
+  formulas:[
+    {title:"Función de Producción Cobb-Douglas", formula:"Y = A × K^(1/3) × H^(2/3)",
+     vars:[{n:"Y",d:"producción/GDP"},{n:"A",d:"tecnología/PTF"},{n:"K",d:"capital físico (máquinas, infraestructura)"},{n:"H",d:"capital humano (trabajadores × productividad)"}],
+     nota:"Rendimientos constantes a escala (1/3+2/3=1): si K y H se duplican, Y se duplica."},
+    {title:"Tasa de Crecimiento del GDP per cápita", formula:"g = (y_{t+1} − y_t) / y_t × 100%",
+     vars:[{n:"y_t",d:"GDP per cápita en el período t"},{n:"y_{t+1}",d:"GDP per cápita en el período siguiente"}],
+     nota:"Ejemplo: EEUU 2005: $42.482. 2006: $43.215. g=(43215−42482)/42482×100=1.7%."},
+    {title:"Regla del 70 (aproximación)", formula:"Años para duplicar = 70 / tasa de crecimiento (%)",
+     nota:"Si creces al 7% anual, tardas ~10 años en duplicar el GDP. Si crecés al 1%, tardas ~70 años."},
+  ],
+  ejercicios:[
+    {titulo:"Corea del Norte vs Sur — Instituciones",
+     enunciado:"Comparar el crecimiento de Corea del Norte y Corea del Sur desde 1947 a 2010. Explicar la diferencia.",
+     datos:["1947: los dos países eran prácticamente iguales en GDP per cápita","2010: Corea del Sur: $26.609/cápita","2010: Corea del Norte: $1.612/cápita"],
+     pasos:["Diferencia en 2010: $26.609 / $1.612 ≈ 16.5 veces más rico el Sur.",
+       "Misma geografía, mismo clima, misma cultura, misma población inicial.",
+       "Única diferencia: instituciones. Sur: mercados libres, derechos de propiedad, democracia.",
+       "Norte: economía planificada, sin derechos de propiedad, dictadura → instituciones extractivas.",
+       "Conclusión: las instituciones, no los recursos naturales ni la geografía, son la causa fundamental del crecimiento."],
+     respuesta:"Corea del Sur es 16.5x más rica gracias a instituciones inclusivas. Las instituciones son la causa fundamental del crecimiento."},
+    {titulo:"India vs EEUU — Rol de la tecnología",
+     enunciado:"El GDP por trabajador en India es mucho menor que en EEUU. ¿Cuánto explicaría la tecnología (A)?",
+     datos:["GDP/trabajador real EEUU: $72.000 (hipotético)","GDP/trabajador real India: mucho menor","Si India tuviera la A (tecnología) de EEUU: GDP/trabajador hipotético = $24.071"],
+     pasos:["Diferencia entre EEUU e India NO se explica solo por el capital (K) o educación (H).",
+       "Si India recibiera mágicamente la tecnología de EEUU (A_EEUU), su GDP/trabajador sería $24.071.",
+       "Esto sigue siendo mucho menor que EEUU → parte se explica por K y H menores.",
+       "Pero la tecnología es el factor MÁS importante para explicar las diferencias de riqueza entre naciones.",
+       "Conclusión: la PTF (A) explica la mayor parte de la diferencia entre países ricos y pobres."],
+     respuesta:"La tecnología (A) es el factor dominante en las diferencias de PIB entre países. Sin ella, más K y H no alcanzan para cerrar la brecha."},
+    {titulo:"Tasa de crecimiento EEUU 2005-2006",
+     enunciado:"GDP per cápita EEUU 2005: $42.482. GDP per cápita 2006: $43.215. Calcular tasa de crecimiento.",
+     datos:["y_2005 = $42.482","y_2006 = $43.215"],
+     pasos:["g = (43.215 − 42.482) / 42.482 × 100.",
+       "Numerador: 43215−42482 = 733.",
+       "g = 733 / 42482 × 100 = 1.72% ≈ 1.7%."],
+     respuesta:"Tasa de crecimiento 2005-2006 = 1.7% anual."},
+  ],
+  tips:["Y = A × K^(1/3) × H^(2/3). Exponentes 1/3 y 2/3. Suman 1.",
+    "Rendimientos decrecientes del K: más capital ayuda, pero cada unidad adicional ayuda MENOS.",
+    "Tecnología (A) = PTF = la razón por la que países con el mismo K y H pueden tener GDP muy diferente.",
+    "Instituciones inclusivas → derechos de propiedad → incentivos para invertir → crecimiento.",
+    "Corea del Norte vs Sur: la ÚNICA diferencia son las instituciones. Es el ejemplo clave del libro."],
+},
 ];
 
-/* ─── INFOGRAFÍAS SVG INLINE ─────────────────────────────────────────────── */
-
-function InfografiaTresPilares() {
-  return (
-    <svg viewBox="0 0 600 320" style={{ width: "100%", maxWidth: 600 }}>
-      <defs>
-        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.6" />
-        </linearGradient>
-      </defs>
-      {/* Círculo central */}
-      <circle cx="300" cy="160" r="55" fill="#1D4ED820" stroke="#1D4ED8" strokeWidth="2" />
-      <text x="300" y="153" textAnchor="middle" fill="#93C5FD" fontSize="11" fontWeight="bold">ECONOMÍA</text>
-      <text x="300" y="168" textAnchor="middle" fill="#93C5FD" fontSize="10">Principios</text>
-      {/* Pilar 1: Optimización */}
-      <circle cx="120" cy="80" r="60" fill="#1D4ED825" stroke="#1D4ED8" strokeWidth="1.5" />
-      <text x="120" y="68" textAnchor="middle" fill="#60A5FA" fontSize="22">🎯</text>
-      <text x="120" y="88" textAnchor="middle" fill="#93C5FD" fontSize="12" fontWeight="bold">Optimización</text>
-      <text x="120" y="103" textAnchor="middle" fill="#94A3B8" fontSize="9">Los agentes eligen</text>
-      <text x="120" y="115" textAnchor="middle" fill="#94A3B8" fontSize="9">lo mejor posible</text>
-      <line x1="175" y1="97" x2="248" y2="133" stroke="#1D4ED860" strokeWidth="1.5" />
-      {/* Pilar 2: Equilibrio */}
-      <circle cx="480" cy="80" r="60" fill="#1D4ED825" stroke="#1D4ED8" strokeWidth="1.5" />
-      <text x="480" y="68" textAnchor="middle" fill="#60A5FA" fontSize="22">⚖️</text>
-      <text x="480" y="88" textAnchor="middle" fill="#93C5FD" fontSize="12" fontWeight="bold">Equilibrio</text>
-      <text x="480" y="103" textAnchor="middle" fill="#94A3B8" fontSize="9">Interacciones llevan</text>
-      <text x="480" y="115" textAnchor="middle" fill="#94A3B8" fontSize="9">a estado estable</text>
-      <line x1="425" y1="97" x2="352" y2="133" stroke="#1D4ED860" strokeWidth="1.5" />
-      {/* Pilar 3: Empirismo */}
-      <circle cx="300" cy="270" r="60" fill="#1D4ED825" stroke="#1D4ED8" strokeWidth="1.5" />
-      <text x="300" y="258" textAnchor="middle" fill="#60A5FA" fontSize="22">📊</text>
-      <text x="300" y="278" textAnchor="middle" fill="#93C5FD" fontSize="12" fontWeight="bold">Empirismo</text>
-      <text x="300" y="293" textAnchor="middle" fill="#94A3B8" fontSize="9">Las teorías se</text>
-      <text x="300" y="305" textAnchor="middle" fill="#94A3B8" fontSize="9">verifican con datos</text>
-      <line x1="300" y1="215" x2="300" y2="248" stroke="#1D4ED860" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function InfografiaOfertaDemanda() {
-  return (
-    <svg viewBox="0 0 500 340" style={{ width: "100%", maxWidth: 500 }}>
-      {/* Ejes */}
-      <line x1="60" y1="280" x2="440" y2="280" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="30" x2="60" y2="280" stroke="#475569" strokeWidth="1.5" />
-      {/* Labels ejes */}
-      <text x="450" y="285" fill="#94A3B8" fontSize="11">Q</text>
-      <text x="45" y="25" fill="#94A3B8" fontSize="11">P</text>
-      {/* Curva Demanda */}
-      <line x1="90" y1="60" x2="400" y2="270" stroke="#059669" strokeWidth="2.5" />
-      <text x="405" y="275" fill="#34D399" fontSize="12" fontWeight="bold">D</text>
-      {/* Curva Oferta */}
-      <line x1="90" y1="270" x2="400" y2="60" stroke="#F59E0B" strokeWidth="2.5" />
-      <text x="405" y="65" fill="#FCD34D" fontSize="12" fontWeight="bold">O</text>
-      {/* Punto de equilibrio */}
-      <circle cx="245" cy="165" r="6" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="1.5" />
-      {/* Líneas punteadas */}
-      <line x1="60" y1="165" x2="245" y2="165" stroke="#475569" strokeWidth="1" strokeDasharray="4,3" />
-      <line x1="245" y1="165" x2="245" y2="280" stroke="#475569" strokeWidth="1" strokeDasharray="4,3" />
-      <text x="30" y="169" fill="#CBD5E1" fontSize="10">P*</text>
-      <text x="238" y="296" fill="#CBD5E1" fontSize="10">Q*</text>
-      {/* Label equilibrio */}
-      <text x="258" y="158" fill="#F1F5F9" fontSize="10" fontWeight="bold">Equilibrio</text>
-      {/* Zona exceso oferta */}
-      <text x="270" y="95" fill="#FCD34D" fontSize="9">Exceso</text>
-      <text x="270" y="107" fill="#FCD34D" fontSize="9">de Oferta</text>
-      <text x="270" y="119" fill="#FCD34D" fontSize="9">↓ Precio baja</text>
-      {/* Zona exceso demanda */}
-      <text x="100" y="230" fill="#34D399" fontSize="9">Exceso</text>
-      <text x="100" y="242" fill="#34D399" fontSize="9">de Demanda</text>
-      <text x="100" y="254" fill="#34D399" fontSize="9">↑ Precio sube</text>
-    </svg>
-  );
-}
-
-function InfografiaEquilibrio() {
-  return (
-    <svg viewBox="0 0 520 300" style={{ width: "100%", maxWidth: 520 }}>
-      {/* Estática comparativa: desplazamiento de demanda */}
-      <text x="260" y="22" textAnchor="middle" fill="#94A3B8" fontSize="12">Estática Comparativa: Sube la Demanda</text>
-      {/* Ejes */}
-      <line x1="60" y1="260" x2="460" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="30" x2="60" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <text x="468" y="265" fill="#94A3B8" fontSize="11">Q</text>
-      <text x="45" y="28" fill="#94A3B8" fontSize="11">P</text>
-      {/* Oferta (fija) */}
-      <line x1="80" y1="250" x2="380" y2="50" stroke="#F59E0B" strokeWidth="2" />
-      <text x="385" y="52" fill="#FCD34D" fontSize="11" fontWeight="bold">O</text>
-      {/* Demanda original D1 */}
-      <line x1="80" y1="50" x2="360" y2="250" stroke="#0F766E" strokeWidth="2" strokeDasharray="5,3" />
-      <text x="365" y="255" fill="#0F766E" fontSize="11">D₁</text>
-      {/* Demanda nueva D2 */}
-      <line x1="150" y1="50" x2="430" y2="250" stroke="#0F766E" strokeWidth="2.5" />
-      <text x="435" y="255" fill="#2DD4BF" fontSize="11" fontWeight="bold">D₂</text>
-      {/* Flecha de desplazamiento */}
-      <text x="290" y="195" fill="#2DD4BF" fontSize="18">→</text>
-      {/* Equilibrio 1 */}
-      <circle cx="205" cy="155" r="5" fill="#0F766E" />
-      <line x1="60" y1="155" x2="205" y2="155" stroke="#0F766E60" strokeWidth="1" strokeDasharray="3,3" />
-      <line x1="205" y1="155" x2="205" y2="260" stroke="#0F766E60" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="30" y="158" fill="#0F766E" fontSize="9">P₁*</text>
-      <text x="198" y="275" fill="#0F766E" fontSize="9">Q₁*</text>
-      {/* Equilibrio 2 */}
-      <circle cx="265" cy="120" r="5" fill="#2DD4BF" />
-      <line x1="60" y1="120" x2="265" y2="120" stroke="#2DD4BF60" strokeWidth="1" strokeDasharray="3,3" />
-      <line x1="265" y1="120" x2="265" y2="260" stroke="#2DD4BF60" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="30" y="123" fill="#2DD4BF" fontSize="9">P₂*</text>
-      <text x="258" y="275" fill="#2DD4BF" fontSize="9">Q₂*</text>
-      {/* Resultado */}
-      <text x="380" y="110" fill="#2DD4BF" fontSize="9">P↑ Q↑</text>
-    </svg>
-  );
-}
-
-function InfografiaConsumidor() {
-  return (
-    <svg viewBox="0 0 500 320" style={{ width: "100%", maxWidth: 500 }}>
-      {/* Ejes */}
-      <line x1="60" y1="270" x2="440" y2="270" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="30" x2="60" y2="270" stroke="#475569" strokeWidth="1.5" />
-      <text x="448" y="275" fill="#94A3B8" fontSize="11">Bien X</text>
-      <text x="25" y="28" fill="#94A3B8" fontSize="11">Bien Y</text>
-      {/* Restricción presupuestaria */}
-      <line x1="60" y1="70" x2="360" y2="270" stroke="#6D28D9" strokeWidth="2.5" />
-      <text x="370" y="275" fill="#A78BFA" fontSize="11" fontWeight="bold">RP</text>
-      {/* Curva de indiferencia U1 */}
-      <path d="M 100 260 Q 140 170 260 130 Q 350 115 400 105" stroke="#6D28D940" strokeWidth="1.5" fill="none" strokeDasharray="4,3" />
-      {/* Curva de indiferencia U2 (óptima) */}
-      <path d="M 80 245 Q 120 140 230 105 Q 320 82 380 75" stroke="#6D28D9" strokeWidth="2" fill="none" />
-      <text x="383" y="78" fill="#A78BFA" fontSize="10" fontWeight="bold">U*</text>
-      {/* Curva U3 (inalcanzable) */}
-      <path d="M 60 220 Q 100 110 190 80 Q 280 55 350 48" stroke="#6D28D930" strokeWidth="1" fill="none" strokeDasharray="3,3" />
-      {/* Punto óptimo */}
-      <circle cx="195" cy="158" r="6" fill="#A78BFA" />
-      <line x1="60" y1="158" x2="195" y2="158" stroke="#6D28D960" strokeWidth="1" strokeDasharray="3,3" />
-      <line x1="195" y1="158" x2="195" y2="270" stroke="#6D28D960" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="205" y="148" fill="#A78BFA" fontSize="10" fontWeight="bold">Óptimo</text>
-      <text x="205" y="160" fill="#C4B5FD" fontSize="9">TMgS = Px/Py</text>
-      {/* Labels interceptos */}
-      <text x="40" y="73" fill="#94A3B8" fontSize="9">Y/Py</text>
-      <text x="350" y="285" fill="#94A3B8" fontSize="9">X/Px</text>
-      {/* Pendiente */}
-      <text x="280" y="195" fill="#A78BFA" fontSize="9">pendiente = -Px/Py</text>
-    </svg>
-  );
-}
-
-function InfografiaProductor() {
-  return (
-    <svg viewBox="0 0 500 300" style={{ width: "100%", maxWidth: 500 }}>
-      {/* Ejes */}
-      <line x1="60" y1="260" x2="440" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="20" x2="60" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <text x="448" y="265" fill="#94A3B8" fontSize="11">Q</text>
-      <text x="40" y="20" fill="#94A3B8" fontSize="11">P, C</text>
-      {/* Curva CM (forma U) */}
-      <path d="M 80 220 Q 150 100 230 80 Q 310 75 420 160" stroke="#D97706" strokeWidth="2.5" fill="none" />
-      <text x="425" y="163" fill="#FCD34D" fontSize="11" fontWeight="bold">CM</text>
-      {/* Curva CTM (forma U más amplia) */}
-      <path d="M 80 240 Q 170 130 260 108 Q 350 100 430 180" stroke="#F97316" strokeWidth="1.5" fill="none" strokeDasharray="5,3" />
-      <text x="435" y="183" fill="#FDBA74" fontSize="10">CTM</text>
-      {/* Precio de mercado (IM = P) */}
-      <line x1="60" y1="110" x2="440" y2="110" stroke="#D97706" strokeWidth="1.5" strokeDasharray="5,3" />
-      <text x="448" y="113" fill="#FCD34D" fontSize="10">P=IM</text>
-      {/* Punto Q* donde P = CM */}
-      <circle cx="305" cy="110" r="5" fill="#FCD34D" />
-      <line x1="305" y1="110" x2="305" y2="260" stroke="#D9770660" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="295" y="275" fill="#FCD34D" fontSize="9">Q*</text>
-      <text x="315" y="100" fill="#FCD34D" fontSize="9" fontWeight="bold">P=CM</text>
-      {/* Área de beneficio */}
-      <rect x="60" y="110" width="245" height="28" fill="#D9770620" />
-      <text x="155" y="128" fill="#FCD34D" fontSize="8" textAnchor="middle">Beneficio = (P - CTM) × Q</text>
-      {/* Label curvas */}
-      <text x="90" y="195" fill="#94A3B8" fontSize="9">Rendimientos</text>
-      <text x="90" y="207" fill="#94A3B8" fontSize="9">crecientes</text>
-      <text x="330" y="180" fill="#94A3B8" fontSize="9">Rendimientos</text>
-      <text x="330" y="192" fill="#94A3B8" fontSize="9">decrecientes</text>
-    </svg>
-  );
-}
-
-function InfografiaEficiencia() {
-  return (
-    <svg viewBox="0 0 520 300" style={{ width: "100%", maxWidth: 520 }}>
-      {/* Ejes */}
-      <line x1="60" y1="260" x2="460" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="20" x2="60" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <text x="468" y="265" fill="#94A3B8" fontSize="11">Q</text>
-      <text x="40" y="20" fill="#94A3B8" fontSize="11">P</text>
-      {/* Demanda */}
-      <line x1="80" y1="40" x2="420" y2="258" stroke="#0891B2" strokeWidth="2.5" />
-      <text x="425" y="262" fill="#22D3EE" fontSize="11" fontWeight="bold">D</text>
-      {/* Oferta */}
-      <line x1="80" y1="258" x2="420" y2="40" stroke="#0891B2" strokeWidth="2.5" />
-      <text x="425" y="43" fill="#22D3EE" fontSize="11" fontWeight="bold">O</text>
-      {/* Equilibrio */}
-      <circle cx="250" cy="149" r="5" fill="#F1F5F9" />
-      <line x1="60" y1="149" x2="250" y2="149" stroke="#0891B260" strokeWidth="1" strokeDasharray="3,3" />
-      <line x1="250" y1="149" x2="250" y2="260" stroke="#0891B260" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="30" y="152" fill="#94A3B8" fontSize="9">P*</text>
-      <text x="244" y="275" fill="#94A3B8" fontSize="9">Q*</text>
-      {/* EC: triángulo excedente del consumidor */}
-      <polygon points="60,149 60,40 250,149" fill="#0891B230" stroke="#0891B280" strokeWidth="1" />
-      <text x="110" y="115" fill="#22D3EE" fontSize="10" fontWeight="bold">EC</text>
-      {/* EP: triángulo excedente del productor */}
-      <polygon points="60,149 60,260 250,149" fill="#0891B218" stroke="#0891B260" strokeWidth="1" />
-      <text x="110" y="210" fill="#22D3EE" fontSize="10" fontWeight="bold">EP</text>
-      {/* Leyendas */}
-      <text x="340" y="80" fill="#22D3EE" fontSize="9">EC = área sobre P*</text>
-      <text x="340" y="94" fill="#22D3EE" fontSize="9">bajo la demanda</text>
-      <text x="340" y="115" fill="#22D3EE" fontSize="9">EP = área bajo P*</text>
-      <text x="340" y="129" fill="#22D3EE" fontSize="9">sobre la oferta</text>
-      <text x="340" y="150" fill="#F1F5F9" fontSize="9" fontWeight="bold">ET = EC + EP</text>
-      <text x="340" y="164" fill="#94A3B8" fontSize="9">Máximo en equilibrio</text>
-    </svg>
-  );
-}
-
-function InfografiaExternalidades() {
-  return (
-    <svg viewBox="0 0 560 300" style={{ width: "100%", maxWidth: 560 }}>
-      {/* ─── PANEL IZQUIERDO: Externalidad Negativa ─── */}
-      <text x="140" y="20" textAnchor="middle" fill="#F87171" fontSize="11" fontWeight="bold">Externalidad Negativa</text>
-      <line x1="20" y1="270" x2="270" y2="270" stroke="#475569" strokeWidth="1.2" />
-      <line x1="20" y1="30" x2="20" y2="270" stroke="#475569" strokeWidth="1.2" />
-      {/* Demanda */}
-      <line x1="30" y1="55" x2="255" y2="265" stroke="#DC2626" strokeWidth="1.8" />
-      <text x="258" y="268" fill="#F87171" fontSize="9">D</text>
-      {/* Oferta Privada (Smercado) */}
-      <line x1="30" y1="265" x2="220" y2="60" stroke="#F59E0B" strokeWidth="1.8" />
-      <text x="224" y="62" fill="#FCD34D" fontSize="9">O_priv</text>
-      {/* Oferta Social (más arriba, mayor costo) */}
-      <line x1="70" y1="265" x2="260" y2="60" stroke="#DC2626" strokeWidth="1.8" strokeDasharray="4,3" />
-      <text x="264" y="63" fill="#F87171" fontSize="9">O_soc</text>
-      {/* Q_mercado */}
-      <circle cx="133" cy="160" r="4" fill="#FCD34D" />
-      <line x1="133" y1="160" x2="133" y2="270" stroke="#F59E0B50" strokeWidth="1" strokeDasharray="3,2" />
-      <text x="127" y="282" fill="#FCD34D" fontSize="8">Q_m</text>
-      {/* Q_optimo */}
-      <circle cx="105" cy="185" r="4" fill="#F87171" />
-      <line x1="105" y1="185" x2="105" y2="270" stroke="#DC262650" strokeWidth="1" strokeDasharray="3,2" />
-      <text x="98" y="282" fill="#F87171" fontSize="8">Q*</text>
-      {/* DWL */}
-      <polygon points="105,185 133,160 133,185" fill="#DC262640" />
-      <text x="112" y="178" fill="#F87171" fontSize="7">DWL</text>
-      <text x="25" y="295" fill="#94A3B8" fontSize="8">↑ Impuesto Pigouviano corrige</text>
-
-      {/* ─── PANEL DERECHO: Externalidad Positiva ─── */}
-      <text x="420" y="20" textAnchor="middle" fill="#4ADE80" fontSize="11" fontWeight="bold">Externalidad Positiva</text>
-      <line x1="300" y1="270" x2="550" y2="270" stroke="#475569" strokeWidth="1.2" />
-      <line x1="300" y1="30" x2="300" y2="270" stroke="#475569" strokeWidth="1.2" />
-      {/* Oferta */}
-      <line x1="310" y1="265" x2="500" y2="60" stroke="#F59E0B" strokeWidth="1.8" />
-      <text x="504" y="63" fill="#FCD34D" fontSize="9">O</text>
-      {/* Demanda Privada */}
-      <line x1="310" y1="60" x2="500" y2="265" stroke="#059669" strokeWidth="1.8" />
-      <text x="503" y="268" fill="#4ADE80" fontSize="9">D_priv</text>
-      {/* Demanda Social (más a la derecha) */}
-      <line x1="350" y1="60" x2="540" y2="265" stroke="#059669" strokeWidth="1.8" strokeDasharray="4,3" />
-      <text x="543" y="268" fill="#4ADE80" fontSize="9">D_soc</text>
-      {/* Q_mercado */}
-      <circle cx="397" cy="162" r="4" fill="#FCD34D" />
-      <line x1="397" y1="162" x2="397" y2="270" stroke="#05966950" strokeWidth="1" strokeDasharray="3,2" />
-      <text x="391" y="282" fill="#FCD34D" fontSize="8">Q_m</text>
-      {/* Q_optimo */}
-      <circle cx="425" cy="145" r="4" fill="#4ADE80" />
-      <line x1="425" y1="145" x2="425" y2="270" stroke="#05966950" strokeWidth="1" strokeDasharray="3,2" />
-      <text x="418" y="282" fill="#4ADE80" fontSize="8">Q*</text>
-      {/* DWL */}
-      <polygon points="397,162 425,145 397,145" fill="#05996940" />
-      <text x="403" y="157" fill="#4ADE80" fontSize="7">DWL</text>
-      <text x="305" y="295" fill="#94A3B8" fontSize="8">↑ Subsidio Pigouviano corrige</text>
-    </svg>
-  );
-}
-
-function InfografiaMonopolio() {
-  return (
-    <svg viewBox="0 0 500 310" style={{ width: "100%", maxWidth: 500 }}>
-      {/* Ejes */}
-      <line x1="60" y1="270" x2="460" y2="270" stroke="#475569" strokeWidth="1.5" />
-      <line x1="60" y1="20" x2="60" y2="270" stroke="#475569" strokeWidth="1.5" />
-      <text x="468" y="275" fill="#94A3B8" fontSize="11">Q</text>
-      <text x="40" y="20" fill="#94A3B8" fontSize="11">P</text>
-      {/* Demanda del mercado */}
-      <line x1="80" y1="40" x2="420" y2="265" stroke="#B45309" strokeWidth="2.5" />
-      <text x="425" y="268" fill="#FCD34D" fontSize="11" fontWeight="bold">D</text>
-      {/* Ingreso Marginal (doble pendiente) */}
-      <line x1="80" y1="40" x2="250" y2="265" stroke="#F59E0B" strokeWidth="2" strokeDasharray="5,3" />
-      <text x="255" y="268" fill="#FCD34D" fontSize="10">IM</text>
-      {/* Costo Marginal */}
-      <line x1="60" y1="195" x2="460" y2="195" stroke="#B45309" strokeWidth="1.8" />
-      <text x="465" y="198" fill="#FCD34D" fontSize="10">CM</text>
-      {/* Q monopolio: IM = CM */}
-      <circle cx="173" cy="195" r="5" fill="#FCD34D" />
-      <line x1="173" y1="195" x2="173" y2="270" stroke="#B4530960" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="164" y="283" fill="#FCD34D" fontSize="9">Q_m</text>
-      {/* P monopolio: sobre la curva de demanda */}
-      <circle cx="173" cy="118" r="5" fill="#EF4444" />
-      <line x1="60" y1="118" x2="173" y2="118" stroke="#EF444460" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="30" y="121" fill="#EF4444" fontSize="9">P_m</text>
-      {/* Precio competitivo: P = CM */}
-      <circle cx="300" cy="195" r="4" fill="#94A3B8" />
-      <line x1="300" y1="195" x2="300" y2="270" stroke="#47556950" strokeWidth="1" strokeDasharray="3,3" />
-      <text x="290" y="283" fill="#94A3B8" fontSize="9">Q_c</text>
-      <line x1="60" y1="195" x2="460" y2="195" stroke="#47556980" strokeWidth="1" />
-      <text x="30" y="198" fill="#94A3B8" fontSize="9">P_c</text>
-      {/* DWL triángulo */}
-      <polygon points="173,118 173,195 300,195" fill="#EF444430" stroke="#EF444460" strokeWidth="1" />
-      <text x="210" y="168" fill="#EF4444" fontSize="10" fontWeight="bold">DWL</text>
-      {/* Beneficio monopolio */}
-      <rect x="60" y="118" width="113" height="77" fill="#B4530920" stroke="#B4530940" strokeWidth="1" />
-      <text x="85" y="160" fill="#FCD34D" fontSize="9">Beneficio</text>
-      <text x="82" y="172" fill="#FCD34D" fontSize="9">monopolio</text>
-    </svg>
-  );
-}
-
-function InfografiaGDP() {
-  const componentes = [
-    { label: "Consumo (C)", pct: 65, color: "#4338CA" },
-    { label: "Inversión (I)", pct: 17, color: "#6366F1" },
-    { label: "Gasto Público (G)", pct: 18, color: "#818CF8" },
-    { label: "Export. Netas (NX)", pct: 0, color: "#A5B4FC" },
-  ];
-  const total = 100;
-  let acum = 0;
-  return (
-    <svg viewBox="0 0 520 280" style={{ width: "100%", maxWidth: 520 }}>
-      <text x="145" y="20" textAnchor="middle" fill="#94A3B8" fontSize="12">GDP = C + I + G + NX</text>
-      {/* Barra horizontal */}
-      {componentes.map((c, i) => {
-        const x = 20 + (acum / total) * 360;
-        const w = (c.pct / total) * 360;
-        acum += c.pct;
-        return (
-          <g key={i}>
-            <rect x={x} y="35" width={w > 0 ? w : 4} height="50" fill={c.color} rx="3" />
-            {w > 30 && <text x={x + w / 2} y="64" textAnchor="middle" fill="#F1F5F9" fontSize="10" fontWeight="bold">{c.pct}%</text>}
-          </g>
-        );
-      })}
-      {/* Leyenda */}
-      {componentes.map((c, i) => (
-        <g key={i}>
-          <rect x={20} y={105 + i * 28} width={16} height={14} fill={c.color} rx="2" />
-          <text x={44} y={118 + i * 28} fill="#CBD5E1" fontSize="11">{c.label}</text>
-        </g>
-      ))}
-      {/* Fórmulas GDP */}
-      <rect x="260" y="100" width="245" height="155" fill="#1e293b" stroke="#4338CA40" strokeWidth="1" rx="8" />
-      <text x="383" y="120" textAnchor="middle" fill="#818CF8" fontSize="11" fontWeight="bold">Identidades Clave</text>
-      <text x="275" y="143" fill="#C4B5FD" fontSize="10">GDP Nominal = precios actuales</text>
-      <text x="275" y="160" fill="#C4B5FD" fontSize="10">GDP Real = precios año base</text>
-      <text x="275" y="185" fill="#A5B4FC" fontSize="10" fontWeight="bold">Deflactor = (GDP_N / GDP_R) × 100</text>
-      <text x="275" y="210" fill="#C4B5FD" fontSize="10">Si Deflactor {">"} 100 → precios subieron</text>
-      <text x="275" y="235" fill="#C4B5FD" fontSize="10">Inflación = Δ% en el Deflactor</text>
-      <text x="275" y="250" fill="#6366F1" fontSize="9">NX = Exportaciones − Importaciones</text>
-    </svg>
-  );
-}
-
-function InfografiaCrecimiento() {
-  return (
-    <svg viewBox="0 0 560 300" style={{ width: "100%", maxWidth: 560 }}>
-      <text x="280" y="20" textAnchor="middle" fill="#94A3B8" fontSize="12">Y = A · f(K, H) — Función de Producción Agregada</text>
-      {/* Ejes */}
-      <line x1="50" y1="260" x2="320" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <line x1="50" y1="30" x2="50" y2="260" stroke="#475569" strokeWidth="1.5" />
-      <text x="328" y="265" fill="#94A3B8" fontSize="10">K (capital)</text>
-      <text x="15" y="28" fill="#94A3B8" fontSize="10">Y</text>
-      {/* Función A1 */}
-      <path d="M 50 240 Q 120 140 200 100 Q 260 80 310 72" stroke="#065F46" strokeWidth="2" fill="none" />
-      <text x="314" y="74" fill="#10B981" fontSize="10">A₁</text>
-      {/* Función A2 (mayor tecnología) */}
-      <path d="M 50 210 Q 120 110 200 70 Q 260 50 310 44" stroke="#10B981" strokeWidth="2.5" fill="none" />
-      <text x="314" y="46" fill="#34D399" fontSize="10" fontWeight="bold">A₂ ↑ Tecnología</text>
-      {/* Estado estacionario */}
-      <line x1="200" y1="30" x2="200" y2="260" stroke="#065F4660" strokeWidth="1" strokeDasharray="4,3" />
-      <text x="165" y="275" fill="#10B981" fontSize="8">Estado est.</text>
-      {/* Flecha desplazamiento */}
-      <text x="155" y="88" fill="#34D399" fontSize="16">↑</text>
-      <text x="142" y="70" fill="#34D399" fontSize="8">Cambio</text>
-      <text x="138" y="80" fill="#34D399" fontSize="8">tecnológico</text>
-      {/* Panel derecho: motores del crecimiento */}
-      <rect x="335" y="30" width="215" height="235" fill="#1e293b" stroke="#065F4640" strokeWidth="1" rx="8" />
-      <text x="443" y="50" textAnchor="middle" fill="#34D399" fontSize="11" fontWeight="bold">Motores del Crecimiento</text>
-      {[
-        { icon: "🏭", label: "Capital Físico (K)", sub: "Rendimientos decrecientes", color: "#10B981" },
-        { icon: "🎓", label: "Capital Humano (H)", sub: "Educación y salud", color: "#6EE7B7" },
-        { icon: "💡", label: "Tecnología (A/PTF)", sub: "Motor ilimitado → ∞", color: "#34D399" },
-        { icon: "🏛️", label: "Instituciones", sub: "Causa fundamental", color: "#A7F3D0" },
-      ].map((m, i) => (
-        <g key={i}>
-          <text x="350" y={80 + i * 48} fill="#F1F5F9" fontSize="16">{m.icon}</text>
-          <text x="378" y={80 + i * 48} fill={m.color} fontSize="10" fontWeight="bold">{m.label}</text>
-          <text x="378" y={94 + i * 48} fill="#94A3B8" fontSize="9">{m.sub}</text>
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-const INFOGRAFIAS = {
-  tres_pilares: InfografiaTresPilares,
-  oferta_demanda: InfografiaOfertaDemanda,
-  equilibrio: InfografiaEquilibrio,
-  consumidor: InfografiaConsumidor,
-  productor: InfografiaProductor,
-  eficiencia: InfografiaEficiencia,
-  externalidades: InfografiaExternalidades,
-  monopolio: InfografiaMonopolio,
-  gdp: InfografiaGDP,
-  crecimiento: InfografiaCrecimiento,
-};
-
-/* ─── COMPONENTES UI ─────────────────────────────────────────────────────── */
-
-const s = {
-  app: { minHeight: "100vh", background: "#0f172a", color: "#f1f5f9", fontFamily: "var(--font)" },
-
-  // Header
-  header: { background: "#1e293b", borderBottom: "1px solid #334155", padding: "16px 24px", display: "flex", alignItems: "center", gap: 16, position: "sticky", top: 0, zIndex: 100 },
-  headerTitle: { fontSize: 20, fontWeight: 700, color: "#f1f5f9", margin: 0 },
-  headerSub: { fontSize: 13, color: "#94a3b8", margin: 0 },
-  backBtn: { background: "#27354a", border: "1px solid #334155", borderRadius: 8, color: "#cbd5e1", padding: "8px 14px", fontSize: 13, cursor: "pointer" },
-
-  // Grid de capítulos
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20, padding: 24 },
-  card: (color) => ({
-    background: `${color}12`,
-    border: `1px solid ${color}40`,
-    borderRadius: 14,
-    padding: 22,
-    cursor: "pointer",
-    transition: "all 0.2s",
-  }),
-  cardNum: (color) => ({ fontSize: 12, color, fontWeight: 600, marginBottom: 4, letterSpacing: 1 }),
-  cardTitle: { fontSize: 17, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 },
-  cardSub: { fontSize: 12, color: "#94a3b8" },
-  cardEmoji: { fontSize: 32, marginBottom: 10 },
-
-  // Detalle del capítulo
-  detalle: { maxWidth: 900, margin: "0 auto", padding: "24px 20px" },
-  chapHeader: (color) => ({
-    background: `${color}15`,
-    border: `1px solid ${color}40`,
-    borderRadius: 12,
-    padding: "20px 24px",
-    marginBottom: 20,
-  }),
-  chapNum: (color) => ({ fontSize: 13, color, fontWeight: 600, marginBottom: 4 }),
-  chapTitle: { fontSize: 26, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 },
-  chapSub: { fontSize: 14, color: "#94a3b8" },
-
-  // Tabs
-  tabs: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" },
-  tab: (active, color) => ({
-    padding: "8px 16px",
-    borderRadius: 8,
-    border: active ? `1px solid ${color}60` : "1px solid #334155",
-    background: active ? `${color}20` : "#1e293b",
-    color: active ? color : "#94a3b8",
-    fontSize: 13,
-    fontWeight: active ? 600 : 400,
-    cursor: "pointer",
-    transition: "all 0.15s",
-  }),
-
-  // Secciones
-  section: { background: "#1e293b", borderRadius: 12, padding: 20, marginBottom: 16 },
-  sectionTitle: (color) => ({ fontSize: 15, fontWeight: 700, color, marginBottom: 14 }),
-  resumenItem: { display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" },
-  resumenDot: (color) => ({ width: 7, height: 7, borderRadius: "50%", background: color, marginTop: 7, flexShrink: 0 }),
-  resumenText: { fontSize: 14, color: "#cbd5e1", lineHeight: 1.65 },
-
-  // Conceptos
-  concepto: (color) => ({
-    background: `${color}0e`,
-    border: `1px solid ${color}30`,
-    borderRadius: 10,
-    padding: "12px 14px",
-    marginBottom: 10,
-  }),
-  conceptoTerm: (color) => ({ fontSize: 13, fontWeight: 700, color, marginBottom: 4 }),
-  conceptoDef: { fontSize: 13, color: "#94a3b8", lineHeight: 1.5 },
-
-  // Tips
-  tip: (color) => ({
-    display: "flex",
-    gap: 10,
-    padding: "10px 14px",
-    background: `${color}0c`,
-    borderLeft: `3px solid ${color}`,
-    borderRadius: "0 8px 8px 0",
-    marginBottom: 8,
-    fontSize: 13,
-    color: "#cbd5e1",
-    lineHeight: 1.5,
-  }),
-
-  // Tabla
-  table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: (color) => ({ textAlign: "left", padding: "10px 12px", borderBottom: `1px solid ${color}30`, color, fontWeight: 600, fontSize: 12 }),
-  td: { padding: "9px 12px", borderBottom: "1px solid #1e293b", color: "#cbd5e1" },
-
-  // Infografía
-  infoBg: { background: "#273549", borderRadius: 12, padding: 20, display: "flex", justifyContent: "center" },
-
-  // Hero
-  hero: { textAlign: "center", padding: "40px 24px 20px" },
-  heroTitle: { fontSize: 32, fontWeight: 800, color: "#f1f5f9", marginBottom: 8 },
-  heroSub: { fontSize: 16, color: "#94a3b8", marginBottom: 4 },
-  heroBadge: { display: "inline-block", background: "#1e293b", border: "1px solid #334155", borderRadius: 20, padding: "4px 14px", fontSize: 12, color: "#64748b", marginBottom: 28 },
-};
-
-/* ─── FLASHCARD ─────────────────────────────────────────────────────────── */
-function Flashcards({ cap }) {
-  const [idx, setIdx] = useState(0);
-  const [flip, setFlip] = useState(false);
-  const cards = cap.conceptos;
-  const card = cards[idx];
+/* ── CHAPTER RENDERER ── */
+function Cap({ cap }) {
+  const c = PAL[cap.pal];
+  const SECS = ["Teoría","Conceptos","Fórmulas","Ejercicios","Tips"];
+  const [sec, setSec] = useState("Teoría");
   return (
     <div>
-      <div style={{ textAlign: "right", color: "#64748b", fontSize: 12, marginBottom: 8 }}>
-        {idx + 1} / {cards.length}
-      </div>
-      <div
-        onClick={() => setFlip(f => !f)}
-        style={{
-          background: flip ? `${cap.color}18` : "#273549",
-          border: `1px solid ${flip ? cap.color + "60" : "#334155"}`,
-          borderRadius: 14,
-          minHeight: 160,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 28,
-          cursor: "pointer",
-          textAlign: "center",
-          transition: "all 0.25s",
-          marginBottom: 14,
-        }}
-      >
-        {!flip ? (
-          <>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>📌 ¿Qué es?</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: cap.color }}>{card.termino}</div>
-            <div style={{ fontSize: 11, color: "#475569", marginTop: 12 }}>← toca para ver definición →</div>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Definición</div>
-            <div style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.6 }}>{card.def}</div>
-          </>
-        )}
-      </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <button
-          style={{ flex: 1, padding: "10px 0", background: "#273549", border: "1px solid #334155", borderRadius: 8, color: "#cbd5e1", fontSize: 13, cursor: "pointer" }}
-          onClick={() => { setIdx(i => Math.max(0, i - 1)); setFlip(false); }}
-          disabled={idx === 0}
-        >← Anterior</button>
-        <button
-          style={{ flex: 1, padding: "10px 0", background: `${cap.color}20`, border: `1px solid ${cap.color}40`, borderRadius: 8, color: cap.color, fontSize: 13, cursor: "pointer", fontWeight: 600 }}
-          onClick={() => { setIdx(i => Math.min(cards.length - 1, i + 1)); setFlip(false); }}
-          disabled={idx === cards.length - 1}
-        >Siguiente →</button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── TABLA COMPARATIVA ─────────────────────────────────────────────────── */
-function TablaComparativa({ cap }) {
-  const cuadro = cap.cuadro;
-  if (!cuadro || cuadro.length === 0) return <div style={{ color: "#64748b" }}>Sin tabla disponible</div>;
-  const headers = Object.keys(cuadro[0]);
-  return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={s.table}>
-        <thead>
-          <tr style={{ background: `${cap.color}15` }}>
-            {headers.map(h => <th key={h} style={s.th(cap.color)}>{h.charAt(0).toUpperCase() + h.slice(1)}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {cuadro.map((row, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? "#1e293b" : "#273549" }}>
-              {headers.map(h => <td key={h} style={s.td}>{row[h]}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/* ─── DETALLE CAPÍTULO ───────────────────────────────────────────────────── */
-function DetalleCapitulo({ cap, onBack }) {
-  const [tab, setTab] = useState("resumen");
-  const InfoComp = INFOGRAFIAS[cap.infografia];
-
-  const TABS = [
-    { id: "resumen", label: "📋 Resumen" },
-    { id: "conceptos", label: "🔑 Conceptos" },
-    { id: "infografia", label: "📊 Infografía" },
-    { id: "cuadro", label: "📐 Cuadro" },
-    { id: "flashcards", label: "🃏 Flashcards" },
-    { id: "tips", label: "⚡ Tips Parcial" },
-  ];
-
-  return (
-    <div>
-      <div style={s.header}>
-        <button style={s.backBtn} onClick={onBack}>← Volver</button>
-        <div>
-          <div style={s.headerTitle}>Economía 1 — {cap.emoji} Cap. {cap.numero}</div>
-          <div style={s.headerSub}>{cap.titulo}</div>
+      <div style={{ padding:"20px 0 16px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6 }}>
+          <span style={{ fontSize:32 }}>{cap.emoji}</span>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:c.m, textTransform:"uppercase", letterSpacing:1 }}>Capítulo {cap.num}</div>
+            <h2 style={{ margin:0, fontSize:22, color:"#111827" }}>{cap.titulo}</h2>
+            <div style={{ fontSize:13, color:"#6B7280" }}>{cap.sub}</div>
+          </div>
         </div>
       </div>
-      <div style={s.detalle}>
-        <div style={s.chapHeader(cap.color)}>
-          <div style={s.chapNum(cap.color)}>CAPÍTULO {cap.numero}</div>
-          <div style={s.chapTitle}>{cap.emoji} {cap.titulo}</div>
-          <div style={s.chapSub}>{cap.subtitulo}</div>
-        </div>
 
-        <div style={s.tabs}>
-          {TABS.map(t => (
-            <button key={t.id} style={s.tab(tab === t.id, cap.color)} onClick={() => setTab(t.id)}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {tab === "resumen" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>Resumen del Capítulo</div>
-            {cap.resumen.map((r, i) => (
-              <div key={i} style={s.resumenItem}>
-                <div style={s.resumenDot(cap.color)} />
-                <div style={s.resumenText}>{r}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "conceptos" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>Conceptos Clave</div>
-            {cap.conceptos.map((c, i) => (
-              <div key={i} style={s.concepto(cap.color)}>
-                <div style={s.conceptoTerm(cap.color)}>{c.termino}</div>
-                <div style={s.conceptoDef}>{c.def}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "infografia" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>Infografía</div>
-            <div style={s.infoBg}>
-              {InfoComp ? <InfoComp /> : <div style={{ color: "#64748b" }}>Sin infografía</div>}
-            </div>
-          </div>
-        )}
-
-        {tab === "cuadro" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>Cuadro Comparativo / Sinóptico</div>
-            <TablaComparativa cap={cap} />
-          </div>
-        )}
-
-        {tab === "flashcards" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>Flashcards — Repaso Rápido</div>
-            <Flashcards cap={cap} />
-          </div>
-        )}
-
-        {tab === "tips" && (
-          <div style={s.section}>
-            <div style={s.sectionTitle(cap.color)}>⚡ Tips para el Parcial</div>
-            <div style={{ marginBottom: 8, fontSize: 12, color: "#64748b" }}>
-              Lo que NO podés olvidar para el examen:
-            </div>
-            {cap.tips.map((t, i) => (
-              <div key={i} style={s.tip(cap.color)}>
-                <span style={{ color: cap.color, fontWeight: 700, marginRight: 4 }}>→</span>
-                {t}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── HOME ───────────────────────────────────────────────────────────────── */
-function Home({ onSelect }) {
-  const [hover, setHover] = useState(null);
-  return (
-    <div>
-      <div style={s.header}>
-        <div>
-          <div style={s.headerTitle}>📚 Economía 1</div>
-          <div style={s.headerSub}>Acemoglu, Laibson & List — UNSAM</div>
-        </div>
-      </div>
-      <div style={s.hero}>
-        <div style={s.heroBadge}>Prof. Emanuel Lopez · UNSAM · 1er Parcial</div>
-        <div style={s.heroTitle}>Repaso para el Parcial</div>
-        <div style={s.heroSub}>10 capítulos · infografías · flashcards · cuadros · tips de examen</div>
-      </div>
-      <div style={s.grid}>
-        {CAPITULOS.map(cap => (
-          <div
-            key={cap.id}
-            style={{
-              ...s.card(cap.color),
-              transform: hover === cap.id ? "translateY(-3px)" : "none",
-              boxShadow: hover === cap.id ? `0 8px 30px ${cap.color}30` : "none",
-            }}
-            onMouseEnter={() => setHover(cap.id)}
-            onMouseLeave={() => setHover(null)}
-            onClick={() => onSelect(cap)}
-          >
-            <div style={s.cardEmoji}>{cap.emoji}</div>
-            <div style={s.cardNum(cap.color)}>CAPÍTULO {cap.numero}</div>
-            <div style={s.cardTitle}>{cap.titulo}</div>
-            <div style={s.cardSub}>{cap.subtitulo}</div>
-            <div style={{ marginTop: 14, display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {["Resumen", "Conceptos", "Infografía", "Flashcards", "Tips"].map(tag => (
-                <span key={tag} style={{
-                  fontSize: 10,
-                  background: `${cap.color}18`,
-                  border: `1px solid ${cap.color}30`,
-                  color: cap.color,
-                  borderRadius: 4,
-                  padding: "2px 7px",
-                }}>{tag}</span>
-              ))}
-            </div>
-          </div>
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20, padding:"10px 0",
+        borderTop:`2px solid ${c.bd}`, borderBottom:`1px solid ${c.bd}` }}>
+        {SECS.map(s=>(
+          <button key={s} onClick={()=>setSec(s)} style={{ padding:"6px 16px", border:"none", borderRadius:20,
+            cursor:"pointer", fontSize:13, fontWeight:s===sec?700:500,
+            background:s===sec?c.m:"#F3F4F6", color:s===sec?"#fff":"#6B7280" }}>{s}</button>
         ))}
+        {cap.grafico && <button onClick={()=>setSec("Gráfico")} style={{ padding:"6px 16px", border:"none", borderRadius:20,
+          cursor:"pointer", fontSize:13, fontWeight:sec==="Gráfico"?700:500,
+          background:sec==="Gráfico"?c.m:"#F3F4F6", color:sec==="Gráfico"?"#fff":"#6B7280" }}>Gráfico</button>}
       </div>
+
+      {sec==="Teoría" && (
+        <div>
+          {cap.teoria.map((t,i)=>(
+            <div key={i} style={{ display:"flex", gap:12, marginBottom:12, alignItems:"flex-start" }}>
+              <div style={{ background:c.m, color:"#fff", borderRadius:"50%", width:24, height:24,
+                display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, flexShrink:0, marginTop:1 }}>{i+1}</div>
+              <p style={{ margin:0, fontSize:14, color:"#374151", lineHeight:1.7 }}>{t}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {sec==="Conceptos" && (
+        <div>
+          {cap.conceptos.map((ck,i)=><Ck key={i} term={ck.t} def={ck.d} c={c}/>)}
+        </div>
+      )}
+
+      {sec==="Fórmulas" && (
+        <div>
+          {cap.formulas.map((f,i)=><Fm key={i} title={f.title} formula={f.formula} vars={f.vars} nota={f.nota} c={c}/>)}
+        </div>
+      )}
+
+      {sec==="Ejercicios" && (
+        <div>
+          <div style={{ background:c.bg, border:`1px solid ${c.bd}`, borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:c.t }}>
+            💡 Hacé click en cada ejercicio para ver la resolución paso a paso
+          </div>
+          {cap.ejercicios.map((ej,i)=><Ej key={i} titulo={ej.titulo} enunciado={ej.enunciado}
+            datos={ej.datos} pasos={ej.pasos} respuesta={ej.respuesta} c={c}/>)}
+        </div>
+      )}
+
+      {sec==="Tips" && (
+        <div style={{ background:c.bg, border:`1px solid ${c.bd}`, borderRadius:12, padding:"16px 18px" }}>
+          <div style={{ fontSize:13, fontWeight:700, color:c.t, marginBottom:12, textTransform:"uppercase", letterSpacing:.5 }}>
+            ⚡ Tips para el Parcial — Cap. {cap.num}
+          </div>
+          {cap.tips.map((t,i)=>(
+            <div key={i} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start", paddingBottom:10,
+              borderBottom: i<cap.tips.length-1?`1px solid ${c.bd}`:"none" }}>
+              <span style={{ background:c.m, color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:12, fontWeight:700, flexShrink:0 }}>{i+1}</span>
+              <span style={{ fontSize:14, color:"#374151", lineHeight:1.5 }}>{t}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {sec==="Gráfico" && cap.grafico==="od" && <GraficoOyD c={c}/>}
+      {sec==="Gráfico" && cap.grafico==="monopolio" && <GraficoMonopolio c={c}/>}
+      {sec==="Gráfico" && cap.grafico==="presupuesto" && <GraficoPresupuesto c={c}/>}
     </div>
   );
 }
 
-/* ─── APP ROOT ───────────────────────────────────────────────────────────── */
+/* ── APP ── */
 export default function App() {
-  const [capActivo, setCapActivo] = useState(null);
+  const [activeId, setActiveId] = useState("cap1");
+  const cap = CAPS.find(c=>c.id===activeId);
+  const c = PAL[cap.pal];
+
   return (
-    <div style={s.app}>
-      {capActivo
-        ? <DetalleCapitulo cap={capActivo} onBack={() => setCapActivo(null)} />
-        : <Home onSelect={setCapActivo} />
-      }
+    <div style={{ fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:"#F9FAFB", minHeight:"100vh" }}>
+
+      {/* Header */}
+      <div style={{ background:"#fff", borderBottom:"1px solid #E5E7EB", padding:"12px 20px",
+        position:"sticky", top:0, zIndex:100 }}>
+        <div style={{ maxWidth:800, margin:"0 auto" }}>
+          <div style={{ fontSize:11, color:"#9CA3AF", fontWeight:600, letterSpacing:1, textTransform:"uppercase", marginBottom:2 }}>
+            Parcial · Introducción a la Economía · UNSAM · Acemoglu
+          </div>
+          <div style={{ overflowX:"auto", display:"flex", gap:6, paddingBottom:4 }}>
+            {CAPS.map(cap=>{
+              const pc = PAL[cap.pal];
+              const active = cap.id===activeId;
+              return (
+                <button key={cap.id} onClick={()=>setActiveId(cap.id)}
+                  style={{ padding:"6px 14px", border:`1px solid ${active?pc.m:pc.bd}`, borderRadius:8,
+                    cursor:"pointer", fontSize:12, fontWeight:active?700:500, whiteSpace:"nowrap",
+                    background:active?pc.m:pc.bg, color:active?"#fff":pc.t, flexShrink:0,
+                    transition:"all 0.12s" }}>
+                  {cap.emoji} {cap.num}. {cap.titulo.split(" ")[0]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth:800, margin:"0 auto", padding:"0 20px 40px" }}>
+        {cap && <Cap key={activeId} cap={cap}/>}
+      </div>
+
+      {/* Footer */}
+      <div style={{ borderTop:"1px solid #E5E7EB", padding:"16px 20px", textAlign:"center",
+        fontSize:12, color:"#9CA3AF", background:"#fff" }}>
+        Caps 1 · 2 · 3 · 4 · 5 · 6 · 7 · 9 · 11 · 12 — Acemoglu, Laibson & List + Slides Prof. Emanuel Lopez
+      </div>
     </div>
   );
 }
