@@ -33,11 +33,13 @@ Todo el contenido vive en el array `CAPITULOS`. Cada capítulo tiene:
 | 5 | El Productor | Naranja `#D97706` |
 | 6 | Eficiencia (mano invisible) | Cian `#0891B2` |
 | 7 | Externalidades y fallas de mercado | Rojo `#DC2626` |
+| 8 | Teoría de Juegos y Oligopolio | Rosa `#BE185D` |
 | 9 | Monopolio | Ámbar `#B45309` |
+| 10 | Mercados de Factores | Cielo `#0369A1` |
 | 11 | GDP y macroeconomía | Índigo `#4338CA` |
 | 12 | Crecimiento económico | Esmeralda `#065F46` |
 
-Capítulos faltantes: 8 (teoría de juegos / oligopolio), 10, y caps de macro (empleo, inflación, ciclos, comercio).
+Capítulos implementados: 1-12 (completo). Faltan solo caps de macro (empleo, inflación, ciclos, comercio) si el curso los incluye.
 
 ## NotebookLM
 
